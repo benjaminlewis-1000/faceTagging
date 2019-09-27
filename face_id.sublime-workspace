@@ -1,0 +1,555 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"ori",
+				"shadow_original"
+			],
+			[
+				"re",
+				"rectangleError"
+			],
+			[
+				"bar_",
+				"one_bar_width"
+			],
+			[
+				"declin",
+				"sunDeclinationFromVertDeg"
+			],
+			[
+				"MODTR",
+				"MODTRAN_DATA"
+			],
+			[
+				"check",
+				"checkIfPointInFOV"
+			],
+			[
+				"two_",
+				"two_sigma_above"
+			],
+			[
+				"sor",
+				"sources_list"
+			],
+			[
+				"outpuT_gr",
+				"output_graph_synth"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 34.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"project ",
+				"Project Manager"
+			],
+			[
+				"package ",
+				"Package Control: Remove Package"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 506.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/lewisbp/gitRepos/SAMPLE_loaders"
+	],
+	"file_history":
+	[
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/generic_classifier_sample.py",
+		"/home/lewisbp/DATA/SAMPLE_Public/README.md",
+		"/home/lewisbp/DATA/SAMPLE_Public/verify.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/sar_segmentation/testing.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/test_pkg.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/sar_segmentation/compute_masks.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/sar_segmentation/nada.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/sar_segmentation/optimal_decomp_scale.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/add_masks_to_mats.py",
+		"/home/lewisbp/snippets/face_id/test_package.py",
+		"/home/lewisbp/snippets/face_id/rectangle.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/tmp.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/dataset_h5_test.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/sar_segmentation/rolling_window.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/sar_segmentation/__init__.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/sar_segmentation/mask_cleanup_tools.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/sar_segmentation/cfar_mstar.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/sar_segmentation/target_shadow_segmentation.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/sar_segmentation/cfar_test.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/sar_segmentation/cfar2_test.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/sar_segmentation/slider_test.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/sar_segmentation/Mammals.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/sar_segmentation/Mammals.",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/loaderTestSuite.py",
+		"/home/lewisbp/gitRepos/SAMPLE_2.0/tools/grubbs_test.m",
+		"/home/lewisbp/gitRepos/SAMPLE_2.0/tools/image_saving/removeOutliers.m",
+		"/home/lewisbp/gitRepos/SAMPLE_2.0/tools/image_saving/save_png.m",
+		"/home/lewisbp/gitRepos/SAMPLE_2.0/masking/compute_target_and_shadow_masks.m",
+		"/home/lewisbp/BooksAndPapers/writtenPapers/bookChapter/chapter.log",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/sar_segmentation/optimal_decom_scale.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/target_shadow_segmentation.py",
+		"/home/lewisbp/snippets/face_id/face_extract.py",
+		"/home/lewisbp/snippets/face_id/tmp.py",
+		"/home/lewisbp/snippets/face_id/Rectangle.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/dataset_test.py",
+		"/home/lewisbp/gitRepos/jupyter_books/pairedSampleSet2.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/pairedNumpySampleSet.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/dataset_numpy_test.py",
+		"/home/lewisbp/gitRepos/SAMPLE_2.0/mat_to_numpy.py",
+		"/home/lewisbp/gitRepos/jupyter_books/2",
+		"/home/lewisbp/tmp.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/testClassifier.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/out.txt",
+		"/files/vol13/projects/SAMPLE/SAMPLE_Database/scripts/get_random_matched.sh",
+		"/files/vol13/projects/SAMPLE/SAMPLE_Database/scripts/arrange_figs.py",
+		"/home/lewisbp/BooksAndPapers/writtenPapers/2019/tri_service_sample/poster/abbrv_mod.bst",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/unpairedSAMPLEset.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/testClasses.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/ex1_imageFolder.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/ex2_customLabelFolder.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/ex3_hdf5Loader.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/ex4_pairedClass.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/ex5_concatDataset.py",
+		"/home/lewisbp/gitRepos/SAMPLE_loaders/pairedSAMPLEset.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/torch_examples/class4_pairedDataset.py",
+		"/home/lewisbp/gitRepos/TestHarness/dualgan/dualgan_pytorch.py",
+		"/home/lewisbp/gitRepos/TestHarness/dualgan/models.py",
+		"/home/lewisbp/gitRepos/TestHarness/dualgan/runfile.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/Manifold_Autoencoder/pairedSAMPLEset.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/Manifold_Autoencoder/unpairedSAMPLEset.py",
+		"/home/lewisbp/gitRepos/TestHarness/dualgan/datasets.py",
+		"/home/lewisbp/BooksAndPapers/writtenPapers/IEEE_ICCAS/Papers/IEEE_ICASSP_2019/plotresults.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/layer_retraining/conf_matrix_arbitrary.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/simgan/monoLabelDataset.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/torch_examples/ex5_concatDataset.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/layer_retraining/dense_layers.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/ben_tests/vgg_sar.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/ACGAN_PyTorch/ACGAN.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/ACGAN_PyTorch/network.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/ben_tests/combinatorial_holdout/computeBest.py",
+		"/home/lewisbp/Downloads/getExif.py",
+		"/home/lewisbp/gitRepos/imageFormationGUI/imageFormationCodes/alignImages.m",
+		"/home/lewisbp/gitRepos/imageFormationGUI/imageFormationCodes/VBJS_SAMPLE.m",
+		"/home/lewisbp/gitRepos/TestHarness/dualgan/pytorch_run.sh",
+		"/home/lewisbp/.config/sublime-text-3/Packages/User/WordCount.sublime-settings",
+		"/home/lewisbp/gitRepos/TestHarness/dualgan/dualGAN_model.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/torch_examples/class2_monolabelExample.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/torch_examples/ex3_hdf5Loader.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/torch_examples/ex4_pairedClass.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/torch_examples/ex2_customLabelFolder.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/torch_examples/ex1_imageFolder.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/torch_examples/class3_hdf5Example.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/torch_examples/class4_pairedDataset.pyc",
+		"/home/lewisbp/gitRepos/atr_projects_2018/torch_examples/class_pairedDataset.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/torch_examples/pairedDataset.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/torch_examples/class_hdf5Example.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/torch_examples/class_hdf5Examply.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/torch_examples/hdf5LoaderClassExample.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/torch_examples/class_monolabelExample.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/torch_examples/customLabelFolderExample.py",
+		"/home/lewisbp/gitRepos/atr_projects_2018/torch_examples/loader_example.py",
+		"/home/lewisbp/gitRepos/TestHarness/pytorch/pytorch-CycleGAN-and-pix2pix-master/train.py",
+		"/home/lewisbp/gitRepos/TestHarness/test_harness.py",
+		"/home/lewisbp/Downloads/bg.bib",
+		"/home/lewisbp/BooksAndPapers/writtenPapers/bookChapter/chapter.tex",
+		"/home/lewisbp/BooksAndPapers/writtenPapers/bookChapter/chapter.",
+		"/home/lewisbp/BooksAndPapers/writtenPapers/IEEE_ICCAS/Papers/IEEE_ICASSP_2019/IEEE_Conf_SAR_GAN.tex",
+		"/home/lewisbp/BooksAndPapers/writtenPapers/spie2019/sar_abstract.txt",
+		"/home/lewisbp/gitRepos/atr_2018/BicycleGAN/scripts/train_SAR.sh",
+		"/home/lewisbp/gitRepos/atr_2018/BicycleGAN/README.txt",
+		"/home/lewisbp/gitRepos/atr_2018/ben_tests/vgg_sar.py",
+		"/home/lewisbp/BooksAndPapers/writtenPapers/IEEE_ICCAS/Papers/IEEE_ICASSP_2019/bib.bib",
+		"/home/lewisbp/BooksAndPapers/writtenPapers/IEEE_ICCAS/Papers/IEEE_ICASSP_2019/IEEE_Conf_SAR_GAN.log",
+		"/home/lewisbp/gitRepos/imageFormationGUI/SAMPLE_generation/processMSTARfile.m",
+		"/home/lewisbp/gitRepos/atr_2018/BicycleGAN/models/bicycle_gan_model.py",
+		"/home/lewisbp/realism/DG_SG_testharness/test_harness.py",
+		"/home/lewisbp/DATA/DIRSIG_experiments/multiRunDIRSIG/imGenQueue.py",
+		"/home/lewisbp/DATA/DIRSIG_experiments/enviToJpeg.py",
+		"/home/lewisbp/DATA/DIRSIG_experiments/Parking1/DIRSIG_Sample_Scene_edited/geometry/M113_A3_E3D_3_0_v3_M95_s1_v2_m_DIRSIG.obj",
+		"/home/lewisbp/DATA/DIRSIG_experiments/multiRunDIRSIG/buildScene.py",
+		"/home/lewisbp/gitRepos/TestHarness/dualgan/model2.py",
+		"/home/lewisbp/gitRepos/TestHarness/README.txt",
+		"/home/lewisbp/gitRepos/TestHarness/dualgan/ops.py",
+		"/home/lewisbp/gitRepos/imageFormationGUI/dataMakerFunctions/ryap_pfa_orig.m",
+		"/home/lewisbp/gitRepos/TestHarness/classificationProcedure.py",
+		"/home/lewisbp/gitRepos/TestHarness/test_harness_2.py",
+		"/home/lewisbp/gitRepos/TestHarness/test_procedure.py",
+		"/home/lewisbp/gitRepos/TestHarness/README",
+		"/home/lewisbp/gitRepos/TestHarness/testScript",
+		"/home/lewisbp/gitRepos/TestHarness/test.test",
+		"/home/lewisbp/gitRepos/TestHarness/testVars.sh",
+		"/home/lewisbp/gitRepos/TestHarness/test.json",
+		"/home/lewisbp/gitRepos/TestHarness/sweep_submission.py",
+		"/home/lewisbp/gitRepos/TestHarness/submitted_combos.txt",
+		"/home/lewisbp/gitRepos/imageFormationCode/fastBpBasic.m",
+		"/home/lewisbp/gitRepos/photoDisplayer/pyInit/addPics.py",
+		"/home/lewisbp/gitRepos/photoDisplayer/pyInit/photoHandler.py",
+		"/home/lewisbp/gitRepos/photoDisplayer/pyInit/getExif.py"
+	],
+	"find":
+	{
+		"height": 32.0
+	},
+	"find_in_files":
+	{
+		"height": 120.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"print",
+			"sar_segm",
+			"target_mask",
+			"print",
+			"mask",
+			"synth_mask",
+			"meas_mask_di",
+			"__default_",
+			"shadow_mask",
+			"refined_target",
+			"print",
+			"print(",
+			"quals",
+			"cfar_mstar",
+			"fill_between",
+			"np.where",
+			"argmax",
+			"min",
+			"count",
+			"was not discrim",
+			"296",
+			"target_ori",
+			"erod",
+			"fill_between_spa",
+			"target",
+			"remove_sma",
+			"remove_small",
+			"threshh",
+			"__gru",
+			"index = l",
+			"yy",
+			"grubbs",
+			"outlier",
+			"cfar_mst",
+			"weib",
+			"weibull",
+			"print",
+			"print(",
+			"mask_centroid",
+			"row_ctr",
+			"mask_centroid",
+			"row_pts",
+			"row_pt",
+			"num_sample_pts",
+			"exponwe",
+			"plt",
+			"plt.",
+			"print",
+			"plt",
+			"fill_betwee",
+			"plt",
+			"plt.",
+			"original shadow ",
+			"assert",
+			"stencil",
+			"side_bou",
+			"convex_hull",
+			"targ_mask",
+			"shad_mask",
+			"__default_load",
+			"synth_mask_di",
+			"assert",
+			"io.",
+			"shad_mask",
+			"targ_mask",
+			"abs_img",
+			"extract_from",
+			"shad_mask",
+			"(file)\nexit()",
+			"erod",
+			"pdf_ideal = ",
+			"ndimage",
+			"remove_",
+			"decompose_and_",
+			"cfar_mstar",
+			"abs_img",
+			"plt",
+			"shad_mask",
+			"targ_mask",
+			"iterto",
+			"hull",
+			"shad_",
+			"pdf_data > ",
+			")\n",
+			"smooth_size",
+			"plot",
+			"ones_array.shape",
+			"ones_array",
+			"convolv",
+			"cfar_mst",
+			"weib",
+			"blockshaped",
+			"recre",
+			"paf",
+			"time.",
+			"cfar_mstar",
+			"cross_idx",
+			"\nplt.subplot(nr, nc, 7)\nplt.imshow(abs_img)",
+			", 7",
+			"500",
+			"cross_val",
+			"num_sample_pt",
+			"smooth_si",
+			"github",
+			")k",
+			"nr =",
+			"hist_data",
+			"num_sample_pts",
+			"samp",
+			"** ",
+			"figure",
+			"Tru",
+			"extract_from",
+			"thread",
+			"mask",
+			"getitem",
+			"synth_mask",
+			"default_loade",
+			"plt",
+			"target_shado",
+			"default_loader",
+			"synth_mask",
+			"getitem",
+			"plt.",
+			"face_recog",
+			"face_recognition",
+			"imageFaceDet",
+			"print (.*)"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": true,
+		"replace_history":
+		[
+			"target_mask",
+			"shadow_mask",
+			"",
+			"shadow_mask",
+			"target_mask",
+			"image",
+			"shadow_mask",
+			"target_mask",
+			"print($1)",
+			"",
+			"pairedNumpyDataset",
+			"5",
+			"found_mat",
+			"get_metadata",
+			"measured_sample",
+			"self.labels",
+			"self.samples",
+			"self.all_labels",
+			"self.all_samples",
+			"''",
+			"synth_",
+			"imageio.imread",
+			"\" \"",
+			"OUTPUT_DIR",
+			"print($1)",
+			"# paired_set = pairedDataset(directory_list = [sample_real, sample_synth])\npaired_set.reset()",
+			"__assemble_dataset__",
+			"get_class_counts",
+			"self.master_sample_dict_list",
+			"corresponding_dir",
+			"given_dir",
+			"print($1)",
+			"new_class_label",
+			"self.samples",
+			"new_file_name",
+			"real_SAMPLE_train",
+			"synth_SAMPLE_train",
+			"synth_SAMPLE_train\n",
+			"\n",
+			"data_dir",
+			"experimentQueue",
+			"runDirectory",
+			"cameraPositionFile",
+			"positionDataXML",
+			"odbFile",
+			"odbData",
+			"numInstancesObjFilename",
+			"odbFileBak",
+			"odbFileText",
+			"hasObjTruth",
+			"objIndex",
+			"sceneDir",
+			"pixelXsizeMicron",
+			"pixelYsizeMicron",
+			"cameraPositionFile",
+			"centerOfTargetX",
+			"centerOfTargetZ",
+			"centerOfTargetY",
+			"",
+			"zRotationRadians",
+			"yRotationRadians",
+			"xRotationRadians",
+			"aimVector"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 32.0
+	},
+	"input":
+	{
+		"height": 46.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.mdpopups":
+	{
+		"height": 0.0
+	},
+	"output.unsaved_changes":
+	{
+		"height": 157.0
+	},
+	"pinned_build_system": "",
+	"project": "face_id",
+	"replace":
+	{
+		"height": 60.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"C:\\Users\\1517785756C\\Desktop\\simgan_fresh_sar\\simGan2.sublime-project"
+			]
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 392.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 592.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 232.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
