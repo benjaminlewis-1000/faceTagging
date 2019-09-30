@@ -8,7 +8,7 @@ import numpy as np
 import scipy.misc
 import coloredlogs
 import random
-from tiled_detect import detect_pyramid
+import tiled_detect
 import logging
 import xmltodict
 import matplotlib.pyplot as plt
@@ -18,7 +18,6 @@ coloredlogs.install()
 
 params1 = {'upsample': 2, 'height': 600, 'width': 300}
 path_to_script = os.path.dirname(os.path.realpath(__file__))
-# xmlParamsFile = os.path.join(path_to_script, 'params.xml')
 
 def imageFaceDetect(image_path, parameter_file='parameters.xml'):
     assert isinstance(image_path, str)
@@ -27,38 +26,57 @@ def imageFaceDetect(image_path, parameter_file='parameters.xml'):
     with open(parameter_file, 'r') as fh:
         parameters = xmltodict.parse(fh.read())
 
+    ml_detected_faces, tagged_faces = extract_faces_from_image(image_path, parameters)
+
+def extract_faces_from_image(image_path, parameters):
+    assert isinstance(image_path, str)
+    assert os.path.isfile(image_path)
+
     tiled_params = parameters['params']['tiled_detect_params']
 
     npImage = face_recognition.load_image_file(image_path)
 
-    ml_detected_faces = detect_pyramid(npImage, tiled_params)
+    ml_detected_faces = tiled_detect.detect_pyramid(npImage, tiled_params)
 
     success_faces, tagged_faces = get_picasa_faces.Get_XMP_Faces(image_path)
 
     assert success_faces, 'Picasa face extraction failed.'
 
-    plt.figure()
-    # for f in ml_detected_faces:
-    #     # print(f.enc_dist(ml_detected_faces[1]))
-    #     # print(f.rectangle.intersectOverUnion(ml_detected_faces[0].rectangle))
-    #     for t in tagged_faces:
-    #         print(f.rectangle.intersectOverUnion(t['bounding_rectangle']))
-           
-
-        f.rectangle.drawOnPhoto(npImage)
-
-    for t in tagged_faces:
-        t['bounding_rectangle'].drawOnPhoto(npImage, colorTriple=(255,255,0))
-
-    # plt.imshow(npImage)
-
-    # plt.show(block=True)
-
     return ml_detected_faces, tagged_faces
-    # height, width, channels = npImage.shape
-    # print(height)
-    # print(width)
-    # print(np.sqrt(float(height) * width / 4e6))
+
+def associate_detections_and_tags(image_path, detected_faces, tagged_faces):
+
+    if len(detected_faces) > 0:
+        for df in detected_faces:
+            assert isinstance(df, tiled_detect.FaceRect)
+
+    if len(tagged_faces) > 0: 
+        for tf in tagged_faces:
+            assert isinstance(tf, dict)
+            assert 'Name' in tf.keys()
+            assert 'bounding_rectangle' in tf.keys()
+
+    image = face_recognition.load_image_file(image_path)
+    for df in detected_faces:
+        df.rectangle.drawOnPhoto(image)
+    for tf in tagged_faces:
+        tf['bounding_rectangle'].drawOnPhoto(image, colorTriple=(255,255, 0))
+
+    plt.figure()
+    plt.imshow(image)
+    plt.show()
+
+    # Not always true that one is completely
+    # inside of the other
+    
+    # Things we do know: two faces can't be co-located. 
+
+    # Same person should have similar detection
+    # encodings in the same picture.
+
+    # I think it's ideal to focus on the largest (?) 
+    # decection/one that comes from the whole image,
+    # if available. 
 
 '''
 

@@ -2,8 +2,9 @@
 
 from rectangle import Rectangle, rectangleError
 import unittest
-from face_extract import imageFaceDetect
+import face_extract
 import os
+import numpy as np
 import get_picasa_faces
 
 path_to_script = os.path.dirname(os.path.realpath(__file__))
@@ -87,13 +88,13 @@ class FaceExtractTester(unittest.TestCase):
     # def test_one_photo_facedetect(self):
     #     # for photo in self.photos_list:
     #     print(self.photos_list[2])
-    #     ml_faces, tagged_faces = imageFaceDetect(self.photos_list[2])
+    #     ml_faces, tagged_faces = extract_faces_from_image(self.photos_list[2])
 
     def test_extract_and_do_something(self, redo=False):
         for photo in self.photos_list:
             out_file = re.sub('.(jpg|JPEG|JPG|jpeg)$', '.pkl', photo)
             if not os.path.isfile(out_file) or redo:
-                ml_faces, tagged_faces = imageFaceDetect(photo)
+                ml_faces, tagged_faces = face_extract.extract_faces_from_image(photo)
                 assert ml_faces is not None
                 assert tagged_faces is not None
                 with open(out_file, 'wb') as fh:
@@ -101,8 +102,14 @@ class FaceExtractTester(unittest.TestCase):
             else:
                 with open(out_file, 'rb') as fh:
                     ml_faces, tagged_faces = pickle.load(fh)
+
+            face_extract.associate_detections_and_tags(photo, ml_faces, tagged_faces)
                     # print(ml_faces)
                     # print(tagged_faces)
+            # for f in ml_faces:
+            #     print(np.mean(np.abs(f.encoding)))
+            #     # print(f.encoding[0:10])
+            #     print(len(f.encoding))
 
     def test_get_xmp(self):
         for photo in self.photos_list:
