@@ -31,16 +31,24 @@ class FaceRect:
         return 5
 
     def __str__(self):
-        return "rectangle = {}, name = {}, encoding = {}".format(self.rectangle, self.name, self.encoding)
+        return "rectangle = {}, name = {}".\
+            format(self.rectangle, self.name, \
+                self.encoding)
+
+    def __repr__(self):
+        return "rectangle = {}, name = {}".\
+            format(self.rectangle, self.name, \
+                self.encoding)
 
     def enc_dist(self, face):
-        assert isinstance(face, FaceRect), 'encoding distance must be called on another FaceRect object.'
+        assert isinstance(face, FaceRect), \
+          'encoding distance must be called on another FaceRect object.'
         assert self.encoding is not None, 'Encoding on both FaceRect objects must not be none.'
         assert face.encoding is not None, 'Encoding on both FaceRect objects must not be none.'
         assert len(face.encoding) == len(self.encoding), 'Length of both encodings must be equal.'
 
         distance = np.linalg.norm(self.encoding - face.encoding)
-        distance = np.abs(self.encoding - face.encoding)
+        # distance = np.mean(np.abs(self.encoding - face.encoding))
         return distance
 
 
@@ -125,7 +133,7 @@ def detect_pyramid(cv_image, parameters):
                 height_chip = chip_part.shape[0]
                 width_chip = chip_part.shape[1]
                 pixels_here = height_chip * width_chip
-                resize_ratio = np.sqrt( float( pixels_here ) / max_pixels_per_chip ) 
+                resize_ratio = np.sqrt(float(pixels_here) / max_pixels_per_chip)
 
                 resized_chip = cv2.resize(chip_part, \
                     ( int( width_chip / resize_ratio ), \
@@ -133,15 +141,15 @@ def detect_pyramid(cv_image, parameters):
                 # print(resized_chip.shape)
                 face_locations = face_recognition.face_locations(resized_chip, \
                     number_of_times_to_upsample=num_upsamples,  model='cnn')
-                print(face_locations)
+                # print(face_locations)
 
                 identity = face_recognition.face_encodings(resized_chip, known_face_locations=face_locations, num_jitters=3)
 
-                print("ID len: " + str(len(identity)))
+                # print("ID len: " + str(len(identity)))
                 assert len(identity) == len(face_locations), 'Identity vector length != face location vector length.'
 
                 num_faces += len(face_locations)
-                print( num_faces )
+                # print( num_faces )
 
                 for index in range(len(face_locations)):
                     # Get the locations of the face from the
@@ -183,8 +191,8 @@ def detect_pyramid(cv_image, parameters):
                     face = FaceRect(rectangle = face_loc_rect, face_image = face_img, encoding = encoding, name=None)
                     faceList.append(face)
 
-    print(len(faceList))
-    print(len(set(faceList)))
+    # print(len(faceList))
+    # print(len(set(faceList)))
     elapsed_time = time.time() - start_time
     print("Elapsed time is : " + str( elapsed_time ) )
 

@@ -11,6 +11,8 @@ import random
 from tiled_detect import detect_pyramid
 import logging
 import xmltodict
+import matplotlib.pyplot as plt
+import get_picasa_faces
 
 coloredlogs.install()
 
@@ -27,16 +29,32 @@ def imageFaceDetect(image_path, parameter_file='parameters.xml'):
 
     tiled_params = parameters['params']['tiled_detect_params']
 
-    npImage = cv2.imread(image_path)
+    npImage = face_recognition.load_image_file(image_path)
 
-    faceList = detect_pyramid(npImage, tiled_params)
-    print(faceList[0])
-    # print(faceList[0].enc_dist(faceList[1]))
+    ml_detected_faces = detect_pyramid(npImage, tiled_params)
 
-    for f in faceList:
-        print(f.enc_dist(faceList[0]))
+    success_faces, tagged_faces = get_picasa_faces.Get_XMP_Faces(image_path)
 
-    # return faceList
+    assert success_faces, 'Picasa face extraction failed.'
+
+    plt.figure()
+    # for f in ml_detected_faces:
+    #     # print(f.enc_dist(ml_detected_faces[1]))
+    #     # print(f.rectangle.intersectOverUnion(ml_detected_faces[0].rectangle))
+    #     for t in tagged_faces:
+    #         print(f.rectangle.intersectOverUnion(t['bounding_rectangle']))
+           
+
+        f.rectangle.drawOnPhoto(npImage)
+
+    for t in tagged_faces:
+        t['bounding_rectangle'].drawOnPhoto(npImage, colorTriple=(255,255,0))
+
+    # plt.imshow(npImage)
+
+    # plt.show(block=True)
+
+    return ml_detected_faces, tagged_faces
     # height, width, channels = npImage.shape
     # print(height)
     # print(width)

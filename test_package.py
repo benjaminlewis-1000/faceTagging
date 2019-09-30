@@ -4,6 +4,7 @@ from rectangle import Rectangle, rectangleError
 import unittest
 from face_extract import imageFaceDetect
 import os
+import get_picasa_faces
 
 path_to_script = os.path.dirname(os.path.realpath(__file__))
 
@@ -36,12 +37,13 @@ class rectangleTester(unittest.TestCase):
 
     def test_iou(self):
         r1 = Rectangle(20, 20, centerX = 30, centerY = 30)
-        r2 = Rectangle(20, 20, centerX = 35, centerY = 35)
+        r2 = Rectangle(20, 20, centerX = 40, centerY = 30)
 
         self.assertNotEqual(r1.intersectOverUnion(r2), 1)
         self.assertNotEqual(r1.intersectOverUnion(r2), 0)
         self.assertEqual(r1.intersectOverUnion(r1), 1)
         self.assertEqual(r2.intersectOverUnion(r2), 1)
+
 
         r1 = Rectangle(20, 20, centerX=10, centerY = 10)
         r2 = Rectangle(20, 20, centerX=20, centerY = 10)
@@ -69,18 +71,45 @@ class rectangleTester(unittest.TestCase):
     #     print(merged)
     #     self.assertEqual(merged, Rectangle(25, 25, leftEdge = 20, topEdge = 20))
 
+import re
+import pickle
+
+
 class FaceExtractTester(unittest.TestCase):
     def setUp(self):
         self.test_photo_dir = os.path.join(path_to_script, 'test_imgs')
         self.photos_list = []
         for root, dirs, files in os.walk(self.test_photo_dir):
             for f in files:
-                self.photos_list.append(os.path.join(root, f))
+                if f.lower().endswith(('.jpeg', '.jpg')):
+                    self.photos_list.append(os.path.join(root, f))
 
-    def test_one_photo_facedetect(self):
-        # for photo in self.photos_list:
-        print(self.photos_list[2])
-        imageFaceDetect(self.photos_list[2])
+    # def test_one_photo_facedetect(self):
+    #     # for photo in self.photos_list:
+    #     print(self.photos_list[2])
+    #     ml_faces, tagged_faces = imageFaceDetect(self.photos_list[2])
+
+    def test_extract_and_do_something(self, redo=False):
+        for photo in self.photos_list:
+            out_file = re.sub('.(jpg|JPEG|JPG|jpeg)$', '.pkl', photo)
+            if not os.path.isfile(out_file) or redo:
+                ml_faces, tagged_faces = imageFaceDetect(photo)
+                assert ml_faces is not None
+                assert tagged_faces is not None
+                with open(out_file, 'wb') as fh:
+                    pickle.dump([ml_faces, tagged_faces], fh)
+            else:
+                with open(out_file, 'rb') as fh:
+                    ml_faces, tagged_faces = pickle.load(fh)
+                    # print(ml_faces)
+                    # print(tagged_faces)
+
+    def test_get_xmp(self):
+        for photo in self.photos_list:
+            success, saved_faces = get_picasa_faces.Get_XMP_Faces(photo)
+            self.assertTrue(success)
+
+    # Need to test XMP when image is rotated... 
 
 if __name__ == '__main__':
     unittest.main()
