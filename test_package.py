@@ -5,6 +5,7 @@ import unittest
 import face_extract
 import os
 import numpy as np
+import xmltodict
 import get_picasa_faces
 
 path_to_script = os.path.dirname(os.path.realpath(__file__))
@@ -40,18 +41,18 @@ class rectangleTester(unittest.TestCase):
         r1 = Rectangle(20, 20, centerX = 30, centerY = 30)
         r2 = Rectangle(20, 20, centerX = 40, centerY = 30)
 
-        self.assertNotEqual(r1.intersectOverUnion(r2), 1)
-        self.assertNotEqual(r1.intersectOverUnion(r2), 0)
-        self.assertEqual(r1.intersectOverUnion(r1), 1)
-        self.assertEqual(r2.intersectOverUnion(r2), 1)
+        self.assertNotEqual(r1.IOU(r2), 1)
+        self.assertNotEqual(r1.IOU(r2), 0)
+        self.assertEqual(r1.IOU(r1), 1)
+        self.assertEqual(r2.IOU(r2), 1)
 
 
         r1 = Rectangle(20, 20, centerX=10, centerY = 10)
         r2 = Rectangle(20, 20, centerX=20, centerY = 10)
-        self.assertEqual(r1.intersectOverUnion(r2), 1/3)
+        self.assertEqual(r1.IOU(r2), 1/3)
 
         r2 = Rectangle(20, 20, centerX=50, centerY=20)
-        self.assertEqual(r1.intersectOverUnion(r2), 0)
+        self.assertEqual(r1.IOU(r2), 0)
 
     def test_resizing(self):
         a = Rectangle(50, 43, leftEdge=10, topEdge = 15)
@@ -63,6 +64,9 @@ class rectangleTester(unittest.TestCase):
         self.assertEqual(a_size, a.height*a.width)
         with self.assertRaises(ValueError):
             a.resize(0)
+
+    def test_distance(self):
+        raise NotImplementedError
 
     # def test_merge(self):
     #     r1 = Rectangle(20, 20, centerX = 30, centerY = 30)
@@ -85,16 +89,32 @@ class FaceExtractTester(unittest.TestCase):
                 if f.lower().endswith(('.jpeg', '.jpg')):
                     self.photos_list.append(os.path.join(root, f))
 
+
+        parameter_file='parameters.xml'
+        with open(parameter_file, 'r') as fh:
+            self.parameters = xmltodict.parse(fh.read())
+
     # def test_one_photo_facedetect(self):
     #     # for photo in self.photos_list:
-    #     print(self.photos_list[2])
-    #     ml_faces, tagged_faces = extract_faces_from_image(self.photos_list[2])
+    #     for photo in self.photos_list:
+    #         ml_faces, tagged_faces = face_extract.extract_faces_from_image(photo, self.parameters)
+    #         if len(ml_faces) > 0:
+    #             break
+    #     # Assert that we at least are getting one image
+    #     # with a detected face. 
+    #     self.assertTrue(len(ml_faces) > 0)
 
-    def test_extract_and_do_something(self, redo=False):
-        for photo in self.photos_list:
+    def test_extract_and_group_faces(self, redo=False):
+
+        # for photo in self.photos_list:
+        for p in range(80, len(self.photos_list)):
+            photo = self.photos_list[p]
+            print(p, photo)
+
+            print(photo)
             out_file = re.sub('.(jpg|JPEG|JPG|jpeg)$', '.pkl', photo)
             if not os.path.isfile(out_file) or redo:
-                ml_faces, tagged_faces = face_extract.extract_faces_from_image(photo)
+                ml_faces, tagged_faces = face_extract.extract_faces_from_image(photo, self.parameters)
                 assert ml_faces is not None
                 assert tagged_faces is not None
                 with open(out_file, 'wb') as fh:
@@ -103,7 +123,8 @@ class FaceExtractTester(unittest.TestCase):
                 with open(out_file, 'rb') as fh:
                     ml_faces, tagged_faces = pickle.load(fh)
 
-            face_extract.associate_detections_and_tags(photo, ml_faces, tagged_faces)
+            face_extract.associate_detections_and_tags(photo, ml_faces, tagged_faces, disp_photo=True)
+            
                     # print(ml_faces)
                     # print(tagged_faces)
             # for f in ml_faces:
@@ -111,10 +132,13 @@ class FaceExtractTester(unittest.TestCase):
             #     # print(f.encoding[0:10])
             #     print(len(f.encoding))
 
-    def test_get_xmp(self):
-        for photo in self.photos_list:
-            success, saved_faces = get_picasa_faces.Get_XMP_Faces(photo)
-            self.assertTrue(success)
+    # def test_get_xmp(self):
+    #     for photo in self.photos_list:
+    #         success, saved_faces = get_picasa_faces.Get_XMP_Faces(photo)
+    #         self.assertTrue(success)
+
+    # def test_get_face_rotations(self):
+    #     raise NotImplementedError('Should do this on GPU.')
 
     # Need to test XMP when image is rotated... 
 

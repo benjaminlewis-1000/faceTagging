@@ -3,6 +3,7 @@
 import math
 import cv2 as cv
 import os
+import numpy as np
 import xmltodict
 
 path_to_script = os.path.dirname(os.path.realpath(__file__))
@@ -133,7 +134,7 @@ class Rectangle():
     def union(self, otherRectangle):
         return self.area + otherRectangle.area - self.intersect(otherRectangle)
 
-    def intersectOverUnion(self, otherRectangle):
+    def IOU(self, otherRectangle):
         return float(self.intersect(otherRectangle)) / self.union(otherRectangle)
 
     def drawOnPhoto(self, cvImg, colorTriple=(255,0,0), lineWidth=8):
@@ -162,6 +163,19 @@ class Rectangle():
 
     #     else:
     #         return None
+
+    def distance(self, other_rect):
+        x_dist = self.centerX - other_rect.centerX
+        y_dist = self.centerY - other_rect.centerY
+        dist = np.sqrt(x_dist ** 2 + y_dist ** 2)
+
+        max_x_size = max(self.width, other_rect.width)
+        max_y_size = max(self.height, other_rect.height)
+
+        # This is very much an approximation.
+        norm_dist = np.sqrt( (x_dist / max_x_size) ** 2 + (y_dist / max_y_size) ** 2 )
+
+        return dist, norm_dist
 
     def expand(self, percentVertical = 0.15, percentHorizontal = 0.15):
 

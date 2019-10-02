@@ -5,6 +5,7 @@ import numpy as np
 import itertools
 from rectangle import Rectangle as rectangle
 import time
+import face_rect 
 
 # import pyexiv2
 # from .pyPicasaFaceXMP import picasaXMPFaceReader as pfr
@@ -17,39 +18,6 @@ import face_recognition
 # params1 = {'upsample': 2, 'height': 600, 'width': 800}
 # params2 = {'upsample': 3, 'height': 280, 'width': 420}
 
-class FaceRect:
-    def __init__(self, rectangle, face_image, encoding = None, name=None):
-        self.rectangle = rectangle
-        self.encoding = encoding
-        self.name = name
-        self.image = face_image
-
-    def __eq__(self, otherFace):
-        return self.rectangle.intersectOverUnion(otherFace.rectangle) > 0.2
-
-    def __hash__(self):
-        return 5
-
-    def __str__(self):
-        return "rectangle = {}, name = {}".\
-            format(self.rectangle, self.name, \
-                self.encoding)
-
-    def __repr__(self):
-        return "rectangle = {}, name = {}".\
-            format(self.rectangle, self.name, \
-                self.encoding)
-
-    def enc_dist(self, face):
-        assert isinstance(face, FaceRect), \
-          'encoding distance must be called on another FaceRect object.'
-        assert self.encoding is not None, 'Encoding on both FaceRect objects must not be none.'
-        assert face.encoding is not None, 'Encoding on both FaceRect objects must not be none.'
-        assert len(face.encoding) == len(self.encoding), 'Length of both encodings must be equal.'
-
-        distance = np.linalg.norm(self.encoding - face.encoding)
-        # distance = np.mean(np.abs(self.encoding - face.encoding))
-        return distance
 
 
 def split_range(range_len, num_parts):
@@ -188,7 +156,7 @@ def detect_pyramid(cv_image, parameters):
 
                     face_loc_rect = rectangle(height_face, width_face, leftEdge = left_scaled, topEdge = top_scaled)
 
-                    face = FaceRect(rectangle = face_loc_rect, face_image = face_img, encoding = encoding, name=None)
+                    face = face_rect.FaceRect(rectangle = face_loc_rect, face_image = face_img, encoding = encoding, name=None, detection_level = cuts)
                     faceList.append(face)
 
     # print(len(faceList))
@@ -238,7 +206,7 @@ def extractPicasa(cv_path):
         height = faces[3]
 
         locRect = rectangle(height, width, leftEdge = left, topEdge = top)
-        face = FaceRect(locRect, encoding=None, name=personName)
+        face = face_rect.FaceRect(locRect, encoding=None, name=personName)
 
         faceList.append(face)
 
@@ -275,7 +243,7 @@ def correlateFaces(imagePath):
             bestIdx = -1
             IntOverUnion = 0
             for i in indices:
-                iou_calc = eachFace.rectangle.intersectOverUnion(cnnFaces[i].rectangle)
+                iou_calc = eachFace.rectangle.IOU(cnnFaces[i].rectangle)
                 if iou_calc > IntOverUnion:
                     bestIdx = i
             matchFace = cnnFaces[bestIdx]

@@ -6,10 +6,13 @@ import cv2
 from rectangle import Rectangle
 import numpy as np
 import scipy.misc
+import itertools
 import coloredlogs
 import random
+import time
 import tiled_detect
 import logging
+import face_rect
 import xmltodict
 import matplotlib.pyplot as plt
 import get_picasa_faces
@@ -31,6 +34,8 @@ def imageFaceDetect(image_path, parameter_file='parameters.xml'):
 def extract_faces_from_image(image_path, parameters):
     assert isinstance(image_path, str)
     assert os.path.isfile(image_path)
+    assert 'params' in parameters.keys()
+    assert 'tiled_detect_params' in parameters['params']
 
     tiled_params = parameters['params']['tiled_detect_params']
 
@@ -44,11 +49,11 @@ def extract_faces_from_image(image_path, parameters):
 
     return ml_detected_faces, tagged_faces
 
-def associate_detections_and_tags(image_path, detected_faces, tagged_faces):
+def associate_detections_and_tags(image_path, detected_faces, tagged_faces, disp_photo=False):
 
     if len(detected_faces) > 0:
         for df in detected_faces:
-            assert isinstance(df, tiled_detect.FaceRect)
+            assert isinstance(df, face_rect.FaceRect)
 
     if len(tagged_faces) > 0: 
         for tf in tagged_faces:
@@ -56,15 +61,308 @@ def associate_detections_and_tags(image_path, detected_faces, tagged_faces):
             assert 'Name' in tf.keys()
             assert 'bounding_rectangle' in tf.keys()
 
-    image = face_recognition.load_image_file(image_path)
-    for df in detected_faces:
-        df.rectangle.drawOnPhoto(image)
-    for tf in tagged_faces:
-        tf['bounding_rectangle'].drawOnPhoto(image, colorTriple=(255,255, 0))
+    image = face_recognition.load_image_file(
+        image_path)
+    pristine_image = image.copy()
 
-    plt.figure()
-    plt.imshow(image)
-    plt.show()
+    if disp_photo:
+        draw_image = image.copy()
+        for df in detected_faces:
+            df.rectangle.drawOnPhoto(draw_image)
+        for tf in tagged_faces:
+            tf['bounding_rectangle'].drawOnPhoto(draw_image, colorTriple=(0,255, 0))
+
+    # Cluster the detected faces based on IOU. 
+    clusters = []
+
+    remaining_clusters = detected_faces.copy()
+    assert isinstance(remaining_clusters, list)
+
+    max_iter = 5000
+    iter_num = 0
+    while len(remaining_clusters) > 0: 
+        # Break infinite loops
+        iter_num += 1
+        assert iter_num < max_iter
+        
+        current_face = remaining_clusters[0]
+        current_cluster = [current_face]
+        for cmp_idx in range(len(remaining_clusters) - 1, 0, -1): 
+            # For all the others, reverse order
+            compare_face = remaining_clusters[cmp_idx]
+            iou = current_face.rectangle.IOU(compare_face.rectangle)
+            if iou > 0: 
+                current_cluster.append(compare_face)
+                remaining_clusters.pop(cmp_idx)
+
+        remaining_clusters.pop(0)
+        current_cluster = tuple(current_cluster)
+        clusters.append(current_cluster)
+        # print("Current cluster length: ", len(current_cluster))
+
+    # Clusters have *any* IOU
+    # print(len(clusters))
+
+    contained_inside_rect_thresh = 0.8
+    enc_dist_thresh = 0.4
+
+    deconflicted_detections = []
+    for each_cluster in clusters:
+        if len(each_cluster) == 1:
+            # print("cluster len 1, no merges")
+            deconflicted_detections.append(each_cluster[0])
+        else:
+            merged = False
+            cluster_cp = list(each_cluster)
+
+            # Complex -- find all the overlaps with the first
+            # thing in the cluster. Remove that first
+            # element and all overlap elements from the cluster.
+            # Repeat until the cluster candidates are empty. 
+            # The tricky thing is the indexing. As usual.
+            iter_num = 0 
+            while len(cluster_cp) > 0: 
+                # Break infinite loops
+                iter_num += 1
+                assert iter_num < max_iter
+                # First thing in the cluster
+                current_root = cluster_cp[0]
+                
+                # Get the value of merges for all
+                # items in the cluster. The first
+                # element is a merge with itself, which
+                # will be true, of course. 
+                merges = [x.test_merge(current_root) for x in cluster_cp]
+                # print(merges)
+
+                # If it merges with anything else, then 
+                # proceed to merge. 
+                if np.any(merges[1:]):
+                    # Start at the end of the list and 
+                    # work backward. 
+                    for m_idx in range(len(cluster_cp) - 1, 0, -1):
+                        if merges[m_idx]:
+                            # If the given index is mergable, 
+                            # then merge it with the current
+                            # root and pop it out. 
+                            current_root = current_root.merge_with(cluster_cp[m_idx], pristine_image)
+                            cluster_cp.pop(m_idx)
+
+                # Put the current root in the deconflicted
+                # list. Then pop it from the cluster. 
+                # print(len(cluster_cp))
+                deconflicted_detections.append(current_root)
+                cluster_cp.pop(0)
+
+    if disp_photo:
+        for d in deconflicted_detections:
+            # print(type(d))
+            d.rectangle.drawOnPhoto(draw_image, colorTriple=(0, 0, 255))
+
+    matched_face_rects = []
+
+    def join_faces(tag_face, det_face=None):
+        # This is used either to turn a tagged face into
+        # a FaceRect, or to merge a detected and a 
+        # tagged face.
+        assert isinstance(tag_face, dict)
+        assert 'bounding_rectangle' in tag_face.keys()
+        assert 'Name' in tag_face.keys()
+        assert tag_face['Name'] is not None
+        if det_face is not None:
+            assert isinstance(det_face, face_rect.FaceRect)
+
+        if det_face is not None:
+            rect_intersect = tag_face['bounding_rectangle'].intersect(det_face.rectangle)
+            # This will be 1 if the tagged is in the 
+            # detected area (100%), smaller if not
+            tag_in_det = rect_intersect / tag_face['bounding_rectangle'].area
+            # This will be 1 if the detection is in the
+            # tag area (100%), smaller if not. 
+            det_in_tag = rect_intersect / det_face.rectangle.area
+
+            # Here, we want to use the bigger, more
+            # relevant rectangle. So if the detected
+            # one is smaller than the tagged one,
+            # use the tagged face; otherwise, vice versa.
+            if det_in_tag > tag_in_det:
+                rect = tag_face['bounding_rectangle']
+            else:
+                rect = det_face.rectangle
+
+            detection_level = det_face.detection_level
+            encoding = det_face.encoding
+
+        else:
+            rect = tag_face['bounding_rectangle']
+            encoding = None
+            detection_level = -1
+
+        name = tag_face['Name']
+
+        face_image = pristine_image[rect.top:rect.bottom, rect.left:rect.right]
+
+        fr = face_rect.FaceRect(rect, face_image, detection_level, encoding, name)
+
+        return fr
+
+
+    # Three cases:
+    # 1 - Detection with no Picasa Face
+    # 2 - Picasa face with no detection
+    # 3 - Picasa face with overlapping detection(s).
+
+    # Case 1:  Detection with no picasa face
+    print("Case 1 todo -- increase image chip size detection")
+    num_det = len(deconflicted_detections)
+    for d_num in range(num_det - 1, -1, -1):
+        # print(d_num)
+        det = deconflicted_detections[d_num]
+        have_match = False
+        for tag in tagged_faces:
+            if tag['bounding_rectangle'].IOU(det.rectangle) > 0:
+                have_match = True
+                break
+
+        if not have_match:
+            matched_face_rects.append(det)
+            # print("Popping ", d_num, len(deconflicted_detections))
+            deconflicted_detections.pop(d_num)
+
+
+    # We should have removed detections that have no
+    # picasa match from the deconflicted_detections,
+    # so we check that here.
+
+    # Assertions for case 1 
+    assert len(set(deconflicted_detections).intersection(set(matched_face_rects) ) ) == 0
+    for match in matched_face_rects:
+        for tag in tagged_faces:
+            assert(tag['bounding_rectangle'].IOU(match.rectangle)) == 0
+
+    # Case 2: Tagged faces with no detections
+    num_tags = len(tagged_faces)
+    for t_num in range(num_tags - 1, -1, -1):
+        tagged = tagged_faces[t_num]
+        have_match = False
+        for det in deconflicted_detections:
+            if tagged['bounding_rectangle'].IOU(det.rectangle) > 0:
+                have_match = True
+                break
+
+        if not have_match:
+            tag_rect = join_faces(tagged)
+            matched_face_rects.append(tag_rect)
+            tagged_faces.pop(t_num)
+
+    # Assertions for case 2
+    for m in matched_face_rects:
+        assert isinstance(m, face_rect.FaceRect)
+    assert len(set(deconflicted_detections).intersection(set(matched_face_rects) ) ) == 0
+    # Assert that everything else has IOUs. 
+    for t in tagged_faces:
+        overlap = False
+        for d in deconflicted_detections:
+            if d.rectangle.IOU(t['bounding_rectangle']) > 0:
+                overlap = True
+        assert overlap
+
+
+    if disp_photo:
+        for df in matched_face_rects:
+            rr = df.rectangle
+            rr.left = rr.left - 10
+            rr.top = rr.top - 10
+            rr.width = rr.width + 20
+            rr.height = rr.height + 20
+            df.rectangle.drawOnPhoto(draw_image,colorTriple=(235,189,52))
+
+
+    # Case 3. Every picasa tag left has at least some 
+    # IOU relation with at least one detected tag that
+    # is left.
+
+    detection_tag_clusters = []
+
+    for tag in tagged_faces:
+        det_list = []
+        for det in deconflicted_detections:
+            if tag['bounding_rectangle'].IOU(det.rectangle) > 0:
+                det_list.append(det)
+        tag_cluster = (tag, det_list)
+        detection_tag_clusters.append(tag_cluster)
+
+    if disp_photo:
+        plt.figure()
+        plt.imshow(draw_image)
+        plt.show()
+
+    for cluster in detection_tag_clusters:
+        tag, det_list = cluster
+        ious = [tag['bounding_rectangle'].IOU(x.rectangle) for x in det_list]
+        intersect_thresh = 0.5
+        norm_intersections = [tag['bounding_rectangle'].intersect(x.rectangle) / min(x.rectangle.area, tag['bounding_rectangle'].area) for x in det_list]
+        int_over_thresh = [x > intersect_thresh for x in norm_intersections]
+
+        # print(len(int_over_thresh))
+        # print(norm_intersections)
+
+        # Sub-case 1: only one intersection at all
+        if len(det_list) == 1:
+            if int_over_thresh[0] > 0.3:
+                joint = join_faces(tag, det_list[0])
+                matched_face_rects.append(joint)
+                deconflicted_detections.remove(det_list[0])
+        else:
+            # Sub-case 2: only one intersection over
+            # the threshold
+            if int_over_thresh.count(True) == 1:
+                idx = int_over_thresh.index(True)
+                isect_face = det_list[idx]
+                joint = join_faces(tag, isect_face)
+                matched_face_rects.append(joint)
+                # Have to consider that the other
+                # overlaps may not belong to any
+                # tagged face. 
+                deconflicted_detections.remove(isect_face)
+            # Sub-case 3: multiple normalized intersections
+            # that are over the threshold level.
+            # Get the one that is closest to the center
+            # of the tag and call the other one a 
+            # separate face. 
+            else:
+                distances = [tag['bounding_rectangle'].distance(x.rectangle)[0] for x in det_list]
+                idx = np.argmin(distances)
+                closest_face = det_list.pop(idx)
+                # for oth_norm in norm_intersections:
+                #     assert oth_norm < max_norm / 2
+                joint = join_faces(tag, closest_face)
+                deconflicted_detections.remove(closest_face)
+                matched_face_rects.append(joint)
+                for m in det_list:
+                    matched_face_rects.append(m)
+                    deconflicted_detections.remove(m)
+
+    if disp_photo:
+        for df in matched_face_rects:
+            rr = df.rectangle
+            rr.left = rr.left - 20
+            rr.top = rr.top - 20
+            rr.width = rr.width + 40
+            rr.height = rr.height + 40
+            df.rectangle.drawOnPhoto(draw_image,colorTriple=(245, 66, 203))
+
+    for others in deconflicted_detections:
+        for matched in matched_face_rects:
+            assert matched.rectangle.IOU(others.rectangle) < intersect_thresh
+        matched_face_rects.append(others)
+        if disp_photo:
+            others.rectangle.drawOnPhoto(draw_image, colorTriple=(100, 200, 150))
+
+    if disp_photo:
+        plt.figure()
+        plt.imshow(draw_image)
+        plt.show()
 
     # Not always true that one is completely
     # inside of the other
