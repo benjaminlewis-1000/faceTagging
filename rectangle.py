@@ -32,6 +32,9 @@ class Rectangle():
 
     def __init__(self, height, width, **kwargs): 
 
+        assert isinstance(width, int)
+        assert isinstance(height, int)
+
         self.centerX = kwargs['centerX'] if 'centerX' in kwargs else None
         self.centerY = kwargs['centerY'] if 'centerY' in kwargs else None
         self.leftEdge = kwargs['leftEdge'] if 'leftEdge' in kwargs else None
@@ -53,8 +56,8 @@ class Rectangle():
         halfHeightUp = math.floor(height / 2.0)
         halfHeightDown = math.ceil(height / 2.0)
 
-        assert halfWidthRight + halfWidthLeft == width, 'Didn''t do math right on width.'
-        assert halfHeightUp + halfHeightDown == height, 'Didn''t do math right on height.'
+        assert halfWidthRight + halfWidthLeft == width, 'Didn''t do math right on width. {} + {} = {}'.format(halfWidthRight, halfWidthLeft, width)
+        assert halfHeightUp + halfHeightDown == height, 'Didn''t do math right on height. {} + {} = {}'.format(halfHeightUp, halfHeightDown, height)
 
         if self.centerX: # We have a center point
             self.centerPoint = Point(self.centerX, self.centerY)
@@ -106,6 +109,9 @@ class Rectangle():
         self.right = int(self.centerX + 0.5* self.width)
         self.top = int(self.centerY - 0.5 * self.height)
         self.bottom=int(self.centerY+ 0.5 * self.height)
+
+        self.width = int(self.width)
+        self.height = int(self.height)
 
     def intersect(self, otherRectangle):
         # Find the number of pixels that overlap between two rectangles. 
@@ -177,7 +183,7 @@ class Rectangle():
 
         return dist, norm_dist
 
-    def expand(self, percentVertical = 0.15, percentHorizontal = 0.15):
+    def expand(self, percentVertical = 0.2, percentHorizontal = 0.2):
 
         self.width = self.width * (1 + percentHorizontal)
         self.height = self.height * (1 + percentVertical)
@@ -190,8 +196,12 @@ class Rectangle():
     def __lt__(self, other):
         return self.area < other.area
 
-    # def __eq__(self, other):
-    #     return self.area == other.area
+    def __eq__(self, other):
+        ls = self.left == other.left
+        rs = self.right == other.right
+        ts = self.top == other.top 
+        bs = self.bottom == other.bottom
+        return ls and rs and ts and bs
 
     def __gt__(self, other):
         return self.area > other.area
@@ -199,6 +209,11 @@ class Rectangle():
     def __repr__(self):
         return "Rectangle: \n  Height: {}\n  Width: {}\n  Top-left: {} x, {} y\n"\
             .format(int(self.height), int(self.width), int(self.left), int(self.top))
+
+    def copy(self):
+        newone = type(self)(int(self.height), int(self.width), centerX = self.centerX, centerY = self.centerY)
+        newone.__dict__.update(self.__dict__)
+        return newone
 
 if __name__ == "__main__":
     passed = True

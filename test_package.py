@@ -94,24 +94,23 @@ class FaceExtractTester(unittest.TestCase):
         with open(parameter_file, 'r') as fh:
             self.parameters = xmltodict.parse(fh.read())
 
-    # def test_one_photo_facedetect(self):
-    #     # for photo in self.photos_list:
-    #     for photo in self.photos_list:
-    #         ml_faces, tagged_faces = face_extract.extract_faces_from_image(photo, self.parameters)
-    #         if len(ml_faces) > 0:
-    #             break
-    #     # Assert that we at least are getting one image
-    #     # with a detected face. 
-    #     self.assertTrue(len(ml_faces) > 0)
+    def test_one_photo_facedetect(self):
+        # for photo in self.photos_list:
+        for photo in self.photos_list:
+            ml_faces, tagged_faces = face_extract.extract_faces_from_image(photo, self.parameters)
+            if len(ml_faces) > 0:
+                break
+        # Assert that we at least are getting one image
+        # with a detected face. 
+        self.assertTrue(len(ml_faces) > 0)
 
     def test_extract_and_group_faces(self, redo=False):
 
         # for photo in self.photos_list:
-        for p in range(80, len(self.photos_list)):
+        for p in range(41, len(self.photos_list)):
             photo = self.photos_list[p]
-            print(p, photo)
 
-            print(photo)
+            print(p, photo)
             out_file = re.sub('.(jpg|JPEG|JPG|jpeg)$', '.pkl', photo)
             if not os.path.isfile(out_file) or redo:
                 ml_faces, tagged_faces = face_extract.extract_faces_from_image(photo, self.parameters)
@@ -123,19 +122,13 @@ class FaceExtractTester(unittest.TestCase):
                 with open(out_file, 'rb') as fh:
                     ml_faces, tagged_faces = pickle.load(fh)
 
-            face_extract.associate_detections_and_tags(photo, ml_faces, tagged_faces, disp_photo=True)
+            face_extract.associate_detections_and_tags(photo, ml_faces, tagged_faces, disp_photo=False)
             
-                    # print(ml_faces)
-                    # print(tagged_faces)
-            # for f in ml_faces:
-            #     print(np.mean(np.abs(f.encoding)))
-            #     # print(f.encoding[0:10])
-            #     print(len(f.encoding))
 
-    # def test_get_xmp(self):
-    #     for photo in self.photos_list:
-    #         success, saved_faces = get_picasa_faces.Get_XMP_Faces(photo)
-    #         self.assertTrue(success)
+    def test_get_xmp(self):
+        for photo in self.photos_list:
+            success, saved_faces = get_picasa_faces.Get_XMP_Faces(photo)
+            self.assertTrue(success)
 
     # def test_get_face_rotations(self):
     #     raise NotImplementedError('Should do this on GPU.')
