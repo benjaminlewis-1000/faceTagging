@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 #     return reduce(lambda x,y:x+y, lst)
 
 # This function will extract the XMP Bag Tag and Picasa faces
-def Get_XMP_Faces(file):
+def Get_XMP_Faces(file, test=False):
     # initialize our return data
     file_data = None
     try:
@@ -98,7 +98,7 @@ def Get_XMP_Faces(file):
     image = face_recognition.load_image_file(file)
     img_height, img_width, _ = image.shape
 
-    for p_num in range(len(persons)):
+    for p_num in range(len(persons)-1, -1, -1):
         left = float(persons[p_num]['Area_x'])
         top = float(persons[p_num]['Area_y']) 
         height = float(persons[p_num]['Area_h']) 

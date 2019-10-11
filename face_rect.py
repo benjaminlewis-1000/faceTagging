@@ -13,7 +13,7 @@ class FaceRect:
         self.detection_level = detection_level
 
     def __eq__(self, otherFace):
-        return self.rectangle.IOU(otherFace.rectangle) > 0.2
+        return self.rectangle == otherFace.rectangle
 
     def __hash__(self):
         m = hashlib.md5()
@@ -60,7 +60,11 @@ class FaceRect:
         this_inside_other = intersect_area / self.rectangle.area
         other_inside_this = intersect_area / face.rectangle.area
         insideness = max(this_inside_other, other_inside_this)
+        too_big_insideness = min(this_inside_other, other_inside_this)
         dist, norm_dist = self.rectangle.distance(face.rectangle)
+
+        if too_big_insideness < 0.04:
+            return False
 
         if enc_dist < enc_thresh:
             enc_score = 1
@@ -89,6 +93,7 @@ class FaceRect:
             total_score = enc_score + intersect_score + dist_score
             if total_score > 2:
                 mergeable = True
+        # print(enc_score, intersect_score, dist_score)
 
         return mergeable
 

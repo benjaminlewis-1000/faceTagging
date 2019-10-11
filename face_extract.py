@@ -94,7 +94,7 @@ def join_faces(pristine_image, tag_face, det_face=None):
 
     return fr
 
-def associate_detections_and_tags(image_path, detected_faces, tagged_faces, disp_photo=False):
+def associate_detections_and_tags(image_path, detected_faces, tagged_faces, disp_photo=False, test=False):
 
     if len(detected_faces) > 0:
         for df in detected_faces:
@@ -106,10 +106,15 @@ def associate_detections_and_tags(image_path, detected_faces, tagged_faces, disp
             assert 'Name' in tf.keys()
             assert 'bounding_rectangle' in tf.keys()
 
+
     image = face_recognition.load_image_file(
         image_path)
     pristine_image = face_recognition.load_image_file(
         image_path)
+
+    if test:
+        huge_face = {'Name': "nada", 'bounding_rectangle': Rectangle(int(image.shape[0] * .95), int(image.shape[1] * .95), centerX = image.shape[1]// 2, centerY  = image.shape[0] // 2)}
+        tagged_faces.append(huge_face)
 
     if disp_photo:
         draw_image = image.copy()
@@ -123,6 +128,9 @@ def associate_detections_and_tags(image_path, detected_faces, tagged_faces, disp
     if disp_photo:
         for d in merged_detections:
             d.rectangle.drawOnPhoto(draw_image, colorTriple=(0, 0, 255))
+        # plt.figure()
+        # plt.imshow(draw_image)
+        # plt.show()
 
     fully_matched = _merge_detections_with_tags(merged_detections, tagged_faces, pristine_image)
 
@@ -139,7 +147,7 @@ def associate_detections_and_tags(image_path, detected_faces, tagged_faces, disp
             bottomLeftCornerOfText = (rr.left, rr.bottom)
             fontScale              = 2
             fontColor              = (255,255,255)
-            lineType               = 2
+            lineType               = 4
 
 
             if df.name is not None:
@@ -157,9 +165,6 @@ def associate_detections_and_tags(image_path, detected_faces, tagged_faces, disp
         plt.figure()
         plt.imshow(draw_image)
         plt.show()
-        plt.figure()
-        plt.imshow(pristine_image)
-        plt.show()
 
     for df in fully_matched:
         r = df.rectangle
@@ -168,6 +173,150 @@ def associate_detections_and_tags(image_path, detected_faces, tagged_faces, disp
         df.image = cut_rectangle
     
     return fully_matched
+
+def _merge_detected_faces(list_of_detects, pristine_image):
+
+
+    def cluster_and_merge(detection_list, pristine_image):
+        # This is a recursive algorithm. It takes a list of 
+        # detections that haven't been merged together and 
+        # merges them. It has two parts -- group detections 
+        # into clusters that have *any* IOU, and then determine
+        # which rectangles in those clusters belong together. 
+
+        clusters = []
+        deconflicted_detections = []
+        touched = [False] * len(detection_list)
+
+        for j in range(len(detection_list)):
+            # We use the 'touched' vector to determine
+            # if a rectangle has been included in a group
+            # already. It's fine for a rectangle to be in 
+            # multiple groups, but multiple groups should 
+            # not be the same sets of rectangles. 
+            if touched[j]:
+                continue
+            # Set to touched, and get the current face
+            # to compare to. However, we don't remove it 
+            # from the list of comparisons. For example,
+            # two different root faces can touch the 
+            # same rectangle without touching each other,
+            # so the same rectangle can be in two clusters. 
+            touched[j] = True
+            current_face = detection_list[j]
+            current_cluster = [current_face]
+            # Comparison. If IOU > 0 for any other rectangle,
+            # add it to the current cluster. Set that 
+            # rectangle to be touched so it doesn't in
+            # turn become a root rectangle. We assume that 
+            # it will either be joined to another rectangle
+            # or it will not and pass to the next iteration.
+            for k in range(len(detection_list)):
+                if k != j:
+                    cmp_face = detection_list[k]
+            
+                    iou = current_face.rectangle.IOU(cmp_face.rectangle)
+                    if iou > 0: 
+                        touched[k] = True
+                        current_cluster.append(cmp_face)
+            current_cluster = tuple(current_cluster)
+            clusters.append(current_cluster)
+
+        # Assert that our clusters aren't the same. I tested
+        # this assertion, it works. 
+        assert len(set(clusters)) == len(clusters)
+
+        # Keep track of rectangles that have been merged together.
+        merged_in = [False] * len(detection_list)
+
+        for each_cluster in clusters:
+            # More assertions. 
+            for i in range(len(each_cluster)):
+                for j in range(len(each_cluster)):
+                    if i != j:
+                        assert each_cluster[i].rectangle != each_cluster[j].rectangle
+
+            if len(each_cluster) == 1:
+                # Cluster all by itself -- easy. Append to
+                # deconflicted, call it merged, move on. 
+                deconflicted_detections.append(each_cluster[0])
+                idx = detection_list.index(each_cluster[0])
+                merged_in[idx] = True
+            else:
+                cluster_cp = list(each_cluster)
+
+                # Get the first thing in the cluster, and mark
+                # it as merged in. 
+                current_root = cluster_cp.pop(0)
+                idx = detection_list.index(current_root)
+                merged_in[idx] = True
+
+                # Get the mergable calculation for all
+                # items in the cluster. The item being
+                # compared has already been removed from
+                # cluster_cp.
+                merges = [x.test_merge(current_root) for x in cluster_cp]
+
+                # If it merges with anything else, then 
+                # proceed to merge. 
+                if np.any(merges):
+                    # Start at the end of the list and 
+                    # work backward. 
+                    for m_idx in range(len(cluster_cp) - 1, -1, -1):
+                        if merges[m_idx]:
+                            # If the given index is mergable, 
+                            # then merge it with the current
+                            # root and pop it out. Also
+                            # mark it as merged in.
+                            to_merge = cluster_cp.pop(m_idx)
+                            idx = detection_list.index(to_merge)
+                            merged_in[idx] = True
+                            current_root = current_root.merge_with(to_merge, pristine_image)
+
+                # Check if this rectangle is already in 
+                # the list of merged detections. This shouldn't
+                # be necessary, but it's a good check.
+                is_in_list = False
+                for det in deconflicted_detections:
+                    if det.rectangle == current_root.rectangle:
+                        is_in_list = True
+                # Put the current root in the deconflicted list
+                if not is_in_list:
+                    deconflicted_detections.append(current_root)
+
+        # Find things that aren't merged yet (not enough overlap
+        # with a root) and put them in another list that 
+        # will be passed to the next iteration of this 
+        # function. 
+        yet_unmerged = []
+        for t in range(len(merged_in)):
+            tch = merged_in[t]
+            if not tch:
+                yet_unmerged.append(detection_list[t])
+
+        return deconflicted_detections, yet_unmerged
+
+    deconflicted_detections = []
+
+    iters = 0
+    while(len(list_of_detects) > 0):
+        iters += 1 
+        assert iters < 50
+
+        # Repeated call of cluster_and_merge until
+        # there are no more to merge. 
+        sub_deconf, list_of_detects = cluster_and_merge(list_of_detects, pristine_image)
+        # Add to the master list. 
+        deconflicted_detections += sub_deconf
+
+    # Assertions.
+    for i in range(len(deconflicted_detections)):
+        for j in range(len(deconflicted_detections)):
+            if i != j:
+                assert deconflicted_detections[i].rectangle != deconflicted_detections[j].rectangle
+
+    return deconflicted_detections
+
 
 def _merge_detections_with_tags(merged_detections, tagged_faces, pristine_image):
 
@@ -239,8 +388,6 @@ def _merge_detections_with_tags(merged_detections, tagged_faces, pristine_image)
         assert overlap
 
 
-
-
     # Case 3. Every picasa tag left has at least some 
     # IOU relation with at least one detected tag that
     # is left.
@@ -261,10 +408,13 @@ def _merge_detections_with_tags(merged_detections, tagged_faces, pristine_image)
                     assert det_list[i].rectangle != det_list[j].rectangle
 
 
-    touched = [False] * len(merged_detections)
+    merged = [False] * len(merged_detections)
+
+    area_cmp_thresh = 5
 
     for cluster in detection_tag_clusters:
         tag, det_list = cluster
+        # print(tag)
         ious = [tag['bounding_rectangle'].IOU(x.rectangle) for x in det_list]
         intersect_thresh = 0.5
         norm_intersections = [tag['bounding_rectangle'].intersect(x.rectangle) / min(x.rectangle.area, tag['bounding_rectangle'].area) for x in det_list]
@@ -275,24 +425,35 @@ def _merge_detections_with_tags(merged_detections, tagged_faces, pristine_image)
 
         # Sub-case 1: only one intersection at all
         if len(det_list) == 1:
+            area_cmp = tag['bounding_rectangle'].area / det_list[0].rectangle.area
+            if area_cmp > area_cmp_thresh:
+                matched_face_rects.append(join_faces(pristine_image, tag))
+                continue
+
             if int_over_thresh[0] > 0.3:
                 joint = join_faces(pristine_image, tag, det_list[0])
                 matched_face_rects.append(joint)
                 deconflict_idx = merged_detections.index(det_list[0])
-                touched[deconflict_idx] = True
+                merged[deconflict_idx] = True
         else:
             # Sub-case 2: only one intersection over
             # the threshold
             if int_over_thresh.count(True) == 1:
                 idx = int_over_thresh.index(True)
                 isect_face = det_list[idx]
+
+                area_cmp = tag['bounding_rectangle'].area / det_list[idx].rectangle.area
+                if area_cmp > area_cmp_thresh:
+                    matched_face_rects.append(join_faces(pristine_image, tag))
+                    continue
+
                 joint = join_faces(pristine_image, tag, isect_face)
                 matched_face_rects.append(joint)
                 # Have to consider that the other
                 # overlaps may not belong to any
                 # tagged face. 
                 deconflict_idx = merged_detections.index(isect_face)
-                touched[deconflict_idx] = True
+                merged[deconflict_idx] = True
 
             # Sub-case 3: multiple normalized intersections
             # that are over the threshold level.
@@ -300,133 +461,30 @@ def _merge_detections_with_tags(merged_detections, tagged_faces, pristine_image)
             # of the tag and call the other one a 
             # separate face. 
             else:
+                # print("Here")
+                # Reject tagged faces that are huge
+                area_cmp = [tag['bounding_rectangle'].area / x.rectangle.area for x in det_list]
                 # Compute distances to each overlapping
                 # face 
                 distances = [tag['bounding_rectangle'].distance(x.rectangle)[0] for x in det_list]
                 idx = np.argmin(distances)
+                if area_cmp[idx] > area_cmp_thresh:
+                    matched_face_rects.append(join_faces(pristine_image, tag))
+                    continue
+
                 closest_face = det_list.pop(idx)
                 joint = join_faces(pristine_image, tag, closest_face)
                 deconflict_idx = merged_detections.index(closest_face)
-                touched[deconflict_idx] = True
+                merged[deconflict_idx] = True
 
                 matched_face_rects.append(joint)
-                for m in det_list:
-                    deconflict_idx = merged_detections.index(m)
-                    touched[deconflict_idx] = True
-
-    # if disp_photo:
-    #     for df in matched_face_rects:
-    #         rr = df.rectangle
-    #         rr.left = rr.left - 20
-    #         rr.top = rr.top - 20
-    #         rr.width = rr.width + 40
-    #         rr.height = rr.height + 40
-    #         df.rectangle.drawOnPhoto(draw_image,colorTriple=(245, 66, 203))
+                # for m in det_list:
+                #     deconflict_idx = merged_detections.index(m)
+                #     touched[deconflict_idx] = True
 
     for idx in range(len(merged_detections)):
-        if not touched[idx]:
+        if not merged[idx]:
             untouch_rect = merged_detections[idx]
-        else:
-            continue
-        # for matched in matched_face_rects:
-        #     assert matched.rectangle.IOU(untouch_rect.rectangle) < intersect_thresh
-        matched_face_rects.append(untouch_rect)
-        # if disp_photo:
-        #     untouch_rect.rectangle.drawOnPhoto(draw_image, colorTriple=(100, 200, 150))
+            matched_face_rects.append(untouch_rect)
 
     return matched_face_rects
-
-def _merge_detected_faces(detection_list, pristine_image):
-    clusters = []
-
-    touched = [False] * len(detection_list)
-
-    for j in range(len(detection_list)):
-        if touched[j]:
-            continue
-        touched[j] = True
-        current_face = detection_list[j]
-        current_cluster = [current_face]
-        for k in range(len(detection_list)):
-            if k != j:
-                cmp_face = detection_list[k]
-        
-                iou = current_face.rectangle.IOU(cmp_face.rectangle)
-                if iou > 0: 
-                    touched[k] = True
-                    current_cluster.append(cmp_face)
-
-        xs = [x.rectangle.left for x in current_cluster]
-        current_cluster = tuple(current_cluster)
-        clusters.append(current_cluster)
-
-    # Clusters have *any* IOU
-    # print(len(clusters))
-
-    contained_inside_rect_thresh = 0.8
-    enc_dist_thresh = 0.4
-
-    max_iter = 500
-
-    deconflicted_detections = []
-    for each_cluster in clusters:
-
-        for i in range(len(each_cluster)):
-            for j in range(len(each_cluster)):
-                if i != j:
-                    assert each_cluster[i].rectangle != each_cluster[j].rectangle
-
-        if len(each_cluster) == 1:
-            deconflicted_detections.append(each_cluster[0])
-        else:
-            cluster_cp = list(each_cluster)
-
-            # This is complex -- find all the overlaps with the first
-            # thing in the cluster. Remove that first
-            # element and all overlap elements from the cluster.
-            # Repeat until the cluster candidates are empty. 
-            # The tricky thing is the indexing. As usual.
-            iter_num = 0 
-            while len(cluster_cp) > 0: 
-                # Break infinite loops
-                iter_num += 1
-                assert iter_num < max_iter
-                # First thing in the cluster
-                current_root = cluster_cp.pop(0)
-                
-                # Get the value of merges for all
-                # items in the cluster. The first
-                # element is a merge with itself, which
-                # will be true, of course. 
-                merges = [x.test_merge(current_root) for x in cluster_cp]
-
-                # If it merges with anything else, then 
-                # proceed to merge. 
-                if np.any(merges):
-                    # Start at the end of the list and 
-                    # work backward. 
-                    for m_idx in range(len(cluster_cp) - 1, -1, -1):
-                        if merges[m_idx]:
-                            # If the given index is mergable, 
-                            # then merge it with the current
-                            # root and pop it out. 
-                            to_merge = cluster_cp.pop(m_idx)
-                            current_root = current_root.merge_with(to_merge, pristine_image)
-
-                # Check if this rectangle is already in 
-                # the list. This is an artifact of my 
-                # clustering. 
-                is_in_list = False
-                for det in deconflicted_detections:
-                    if det.rectangle == current_root.rectangle:
-                        is_in_list = True
-                # Put the current root in the deconflicted list
-                if not is_in_list:
-                    deconflicted_detections.append(current_root)
-
-    for i in range(len(deconflicted_detections)):
-        for j in range(len(deconflicted_detections)):
-            if i != j:
-                assert deconflicted_detections[i].rectangle != deconflicted_detections[j].rectangle
-
-    return deconflicted_detections

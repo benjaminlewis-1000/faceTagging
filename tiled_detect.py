@@ -60,6 +60,8 @@ def detect_pyramid(cv_image, parameters):
     
     faceList = []
 
+    pct_exp = 0.06
+
     # Cut the image in a 3x3 grid, using split_range. Then we will
     # expand these even cuts slightly on top of each other to catch
     # faces that are on the border between the grids. 
@@ -69,29 +71,38 @@ def detect_pyramid(cv_image, parameters):
         height_parts = split_range(height, cuts)
 
         # Expansion of the borders by a few percent. 
-        width_x_percent = int(0.06 * width / cuts )
-        height_x_percent = int(0.06 * height / cuts )
+        width_x_percent = int(pct_exp * width / cuts )
+        height_x_percent = int(pct_exp * height / cuts )
 
         for leftIdx in range(len(width_parts) - 1):
             for topIdx in range(len(height_parts) - 1):
 
                 # Get the top/bottom, left/right of each
                 # grid. 
-                left_edge = width_parts[leftIdx]
-                right_edge = width_parts[leftIdx + 1]
-                top_edge = height_parts[topIdx]
-                bottom_edge = height_parts[topIdx + 1]
+                left_edge_0 = width_parts[leftIdx]
+                right_edge_0 = width_parts[leftIdx + 1]
+                top_edge_0 = height_parts[topIdx]
+                bottom_edge_0 = height_parts[topIdx + 1]
 
                 # Since the faces may be split on an edge,
                 # put in a 3% overlap between tiles.
-                if left_edge > 0: 
-                    left_edge -= width_x_percent
-                if top_edge > 0:
-                    top_edge -= height_x_percent
-                if right_edge < width:
-                    right_edge += width_x_percent
-                if bottom_edge < height:
-                    bottom_edge += height_x_percent
+                # if left_edge > 0: 
+                left_edge = max(0, left_edge_0 - width_x_percent)
+                # if top_edge > 0:
+                    # top_edge -= height_x_percent
+                top_edge = max(0, top_edge_0 - height_x_percent)
+                # if right_edge < width:
+                #     right_edge += width_x_percent
+                right_edge = min(width, right_edge_0 + width_x_percent)
+                # if bottom_edge < height:
+                #     bottom_edge += height_x_percent
+                bottom_edge = min(height, bottom_edge_0 + height_x_percent)
+
+                assert left_edge < right_edge
+                assert top_edge < bottom_edge
+
+                assert (bottom_edge - top_edge) <= int((bottom_edge_0 - top_edge_0) * (1 + pct_exp * 2) + 1)
+                assert (right_edge - left_edge) <= int((right_edge_0 - left_edge_0) * (1 + pct_exp * 2) + 1)
 
                 # Cut out the chip. 
                 chip_part = cv_image[top_edge:bottom_edge, left_edge:right_edge]
@@ -111,10 +122,8 @@ def detect_pyramid(cv_image, parameters):
                     number_of_times_to_upsample=num_upsamples,  model='cnn')
                 # print(face_locations)
 
-                identity = face_recognition.face_encodings(resized_chip, known_face_locations=face_locations, num_jitters=3)
-
                 # print("ID len: " + str(len(identity)))
-                assert len(identity) == len(face_locations), 'Identity vector length != face location vector length.'
+                # assert len(identity) == len(face_locations), 'Identity vector length != face location vector length.'
 
                 num_faces += len(face_locations)
                 # print( num_faces )
@@ -125,7 +134,7 @@ def detect_pyramid(cv_image, parameters):
                     # need to be scaled back up for proper 
                     # identification.
                     top_chip, right_chip, bottom_chip, left_chip = face_locations[index]
-                    encoding = identity[index]
+                    # encoding = identity[index]
 
                     # height_face = abs(top_chip - bottom_chip)
                     # width_face = abs(left_chip - right_chip)
@@ -144,8 +153,18 @@ def detect_pyramid(cv_image, parameters):
                     left_scaled = int(left_chip * resize_ratio + left_edge)
                     right_scaled = int(right_chip * resize_ratio + left_edge)
 
-                    height_face = np.abs(bottom_scaled - top_scaled)
-                    width_face = np.abs(right_scaled - left_scaled)
+                    height_face = int(np.abs(bottom_scaled - top_scaled))
+                    width_face = int(np.abs(right_scaled - left_scaled))
+
+                    face_loc_rescaled = [(top_scaled, right_scaled, bottom_scaled, left_scaled)]
+
+                    # Get the encoding on the upscaled image 
+                    # using the face bounding boxes that are 
+                    # upsampled. 
+                    encoding = face_recognition.face_encodings(cv_image, known_face_locations=face_loc_rescaled, num_jitters=10)
+                    assert len(encoding) == 1
+                    encoding = encoding[0]
+                    # print(encoding)
 
                     # Draw a rectangle on the image? 
                     # cv2.rectangle(cv_image, (left_scaled, top_scaled), (right_scaled, bottom_scaled), (0, 255, 0), 5)
@@ -159,8 +178,6 @@ def detect_pyramid(cv_image, parameters):
                     face = face_rect.FaceRect(rectangle = face_loc_rect, face_image = face_img, encoding = encoding, name=None, detection_level = cuts)
                     faceList.append(face)
 
-    # print(len(faceList))
-    # print(len(set(faceList)))
     elapsed_time = time.time() - start_time
     print("Elapsed time is : " + str( elapsed_time ) )
 
@@ -183,7 +200,7 @@ def detect_pyramid(cv_image, parameters):
 #    cv2.imshow('Resized Window', cv_image)
 #    cv2.waitKey(0)
 
-    print(num_faces)
+    # print(num_faces)
 
     return faceList
 
@@ -193,7 +210,7 @@ def extractPicasa(cv_path):
     picasaMetadata = pfr.Imagedata(cv_path)
     xmpFaces = pfr.XMPFace(picasaMetadata).getFaces()
 
-    print(xmpFaces)
+    # print(xmpFaces)
 
     faceList = []
 
@@ -210,7 +227,7 @@ def extractPicasa(cv_path):
 
         faceList.append(face)
 
-    print( len(faceList) )
+    # print( len(faceList) )
 
     return faceList
 

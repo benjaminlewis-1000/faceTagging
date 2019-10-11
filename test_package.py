@@ -7,6 +7,9 @@ import os
 import numpy as np
 import xmltodict
 import get_picasa_faces
+import re
+import pickle
+import classify_faces
 
 path_to_script = os.path.dirname(os.path.realpath(__file__))
 
@@ -65,8 +68,8 @@ class rectangleTester(unittest.TestCase):
         with self.assertRaises(ValueError):
             a.resize(0)
 
-    def test_distance(self):
-        raise NotImplementedError
+    # def test_distance(self):
+    #     raise NotImplementedError
 
     # def test_merge(self):
     #     r1 = Rectangle(20, 20, centerX = 30, centerY = 30)
@@ -75,9 +78,6 @@ class rectangleTester(unittest.TestCase):
     #     merged = r1.mergeWith(r2)
     #     print(merged)
     #     self.assertEqual(merged, Rectangle(25, 25, leftEdge = 20, topEdge = 20))
-
-import re
-import pickle
 
 
 class FaceExtractTester(unittest.TestCase):
@@ -96,7 +96,8 @@ class FaceExtractTester(unittest.TestCase):
 
     def test_one_photo_facedetect(self):
         # for photo in self.photos_list:
-        for photo in self.photos_list:
+        for photo in self.photos_list[1:]:
+            print(photo)
             ml_faces, tagged_faces = face_extract.extract_faces_from_image(photo, self.parameters)
             if len(ml_faces) > 0:
                 break
@@ -107,7 +108,11 @@ class FaceExtractTester(unittest.TestCase):
     def test_extract_and_group_faces(self, redo=False):
 
         # for photo in self.photos_list:
-        for p in range(41, len(self.photos_list)):
+        problems = [41, 65, 77, 79, 80, 83, 96, 100, 151]
+
+        all_matches = []
+        for p in range(len(self.photos_list)):
+        # for p in problems:
             photo = self.photos_list[p]
 
             print(p, photo)
@@ -122,8 +127,56 @@ class FaceExtractTester(unittest.TestCase):
                 with open(out_file, 'rb') as fh:
                     ml_faces, tagged_faces = pickle.load(fh)
 
-            face_extract.associate_detections_and_tags(photo, ml_faces, tagged_faces, disp_photo=False)
-            
+            test_bigface = False
+            num_faces_file = re.sub('.(jpg|JPEG|JPG|jpeg)$', '_numface.pkl', photo)
+            matched = face_extract.associate_detections_and_tags(photo, ml_faces, tagged_faces, disp_photo=False, test=test_bigface)
+
+            all_matches += matched
+
+            if test_bigface:
+                pass
+            else:
+
+                if not os.path.isfile(num_faces_file):
+                    with open(num_faces_file, 'wb') as fh:
+                        pickle.dump([len(matched)], fh)
+                else:
+                    with open(num_faces_file, 'rb') as fh:
+                        expected_num_faces = pickle.load(fh)[0]
+                        assert expected_num_faces == len(matched)
+
+
+    def test_classification(self):
+
+        face_list_file = os.path.join(self.test_photo_dir, 'class_list.pkl')
+
+        if not os.path.isfile(face_list_file):
+            all_matches = []
+            for photo in self.photos_list:
+                print(photo)
+                out_file = re.sub('.(jpg|JPEG|JPG|jpeg)$', '.pkl', photo)
+                if not os.path.isfile(out_file):
+                    ml_faces, tagged_faces = face_extract.extract_faces_from_image(photo, self.parameters)
+                    assert ml_faces is not None
+                    assert tagged_faces is not None
+                    with open(out_file, 'wb') as fh:
+                        pickle.dump([ml_faces, tagged_faces], fh)
+                else:
+                    with open(out_file, 'rb') as fh:
+                        ml_faces, tagged_faces = pickle.load(fh)
+
+                matched = face_extract.associate_detections_and_tags(photo, ml_faces, tagged_faces)
+
+                all_matches += matched
+
+            with open(face_list_file, 'wb') as fh:
+                pickle.dump([all_matches], fh)
+
+        else:
+            with open(face_list_file, 'rb') as fh:
+                all_matches = pickle.load(fh)[0]
+
+        classify_faces.sort_common_faces(all_matches, num_inst_thresh = 10)
 
     def test_get_xmp(self):
         for photo in self.photos_list:
