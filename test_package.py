@@ -82,39 +82,6 @@ class rectangleTester(unittest.TestCase):
     #     self.assertEqual(merged, Rectangle(25, 25, leftEdge = 20, topEdge = 20))
 
 
-class FaceExtractTesterByteIO(unittest.TestCase):
-    def setUp(self):
-        self.test_photo_dir = os.path.join(path_to_script, 'test_imgs')
-        self.photos_list = []
-        for root, dirs, files in os.walk(self.test_photo_dir):
-            for f in files:
-                if f.lower().endswith(('.jpeg', '.jpg')):
-                    self.photos_list.append(os.path.join(root, f))
-
-
-        parameter_file='parameters.xml'
-        with open(parameter_file, 'r') as fh:
-            self.parameters = xmltodict.parse(fh.read())
-
-    def __image_to_ByteIO__(self, photo_file):
-        with open(photo_file, 'rb') as imageFile:
-            data_str = base64.b64encode(imageFile.read())
-
-        data = base64.b64decode(data_str)
-        file = io.BytesIO(data)
-
-        return file
-
-    def test_one_photo_facedetect(self):
-        # for photo in self.photos_list:
-        for photo in self.photos_list[1:]:
-            photo = self.__image_to_ByteIO__(photo)
-            ml_faces, tagged_faces = face_extract.extract_faces_from_image(photo, self.parameters)
-            if len(ml_faces) > 0:
-                break
-        # Assert that we at least are getting one image
-        # with a detected face. 
-        self.assertTrue(len(ml_faces) > 0)
 
 class FaceExtractTester(unittest.TestCase):
     def setUp(self):
@@ -130,10 +97,15 @@ class FaceExtractTester(unittest.TestCase):
         with open(parameter_file, 'r') as fh:
             self.parameters = xmltodict.parse(fh.read())
 
+
+    def __image_preprocess__(self, photo_file):
+        return photo_file, photo_file
+
     def test_one_photo_facedetect(self):
         # for photo in self.photos_list:
         for photo in self.photos_list[1:]:
             print(photo)
+            photo, filename = self.__image_preprocess__(photo)
             ml_faces, tagged_faces = face_extract.extract_faces_from_image(photo, self.parameters)
             if len(ml_faces) > 0:
                 break
@@ -150,9 +122,10 @@ class FaceExtractTester(unittest.TestCase):
         for p in range(len(self.photos_list)):
         # for p in problems:
             photo = self.photos_list[p]
+            photo, filename = self.__image_preprocess__(photo)
 
-            print(p, photo)
-            out_file = re.sub('.(jpg|JPEG|JPG|jpeg)$', '.pkl', photo)
+            print(p, filename)
+            out_file = re.sub('.(jpg|JPEG|JPG|jpeg)$', '.pkl', filename)
             if not os.path.isfile(out_file) or redo:
                 ml_faces, tagged_faces = face_extract.extract_faces_from_image(photo, self.parameters)
                 assert ml_faces is not None
@@ -164,7 +137,7 @@ class FaceExtractTester(unittest.TestCase):
                     ml_faces, tagged_faces = pickle.load(fh)
 
             test_bigface = False
-            num_faces_file = re.sub('.(jpg|JPEG|JPG|jpeg)$', '_numface.pkl', photo)
+            num_faces_file = re.sub('.(jpg|JPEG|JPG|jpeg)$', '_numface.pkl', filename)
             matched = face_extract.associate_detections_and_tags(photo, ml_faces, tagged_faces, disp_photo=False, test=test_bigface)
 
             all_matches += matched
@@ -217,6 +190,7 @@ class FaceExtractTester(unittest.TestCase):
 
     def test_get_xmp(self):
         for photo in self.photos_list:
+            photo, filename = self.__image_preprocess__(photo)
             success, saved_faces = get_picasa_faces.Get_XMP_Faces(photo)
             self.assertTrue(success)
 
@@ -224,6 +198,19 @@ class FaceExtractTester(unittest.TestCase):
     #     raise NotImplementedError('Should do this on GPU.')
 
     # Need to test XMP when image is rotated... 
+
+
+class FaceExtractTesterByteIO(FaceExtractTester):
+
+    def __image_preprocess__(self, photo_file):
+        with open(photo_file, 'rb') as imageFile:
+            data_str = base64.b64encode(imageFile.read())
+
+        data = base64.b64decode(data_str)
+        file = io.BytesIO(data)
+
+        return file, photo_file
+
 
 if __name__ == '__main__':
     unittest.main()
