@@ -181,3 +181,5 @@ def sort_common_faces(list_of_facerects, num_inst_thresh=150):
     # label = torch.tensor([[1.0, .0, 0.0, 0.0]]).float()
     # print("Loss ", loss(label, torch.tensor([0])))
     # print("Loss ", loss(label, torch.tensor([1])))
+# For a network trained with a label smoothing of parameter α, we minimize instead the cross-entropy between the modified targets y^LS_k and the networks’ outputs pk, where yLS k = yk(1 − α) + α/K
+# When Does Label Smoothing Help paper

@@ -4,6 +4,7 @@ import math
 import cv2 as cv
 import os
 import numpy as np
+import json
 import xmltodict
 
 path_to_script = os.path.dirname(os.path.realpath(__file__))
@@ -209,6 +210,10 @@ class Rectangle():
     def __repr__(self):
         return "Rectangle: \n  Height: {}\n  Width: {}\n  Top-left: {} x, {} y\n"\
             .format(int(self.height), int(self.width), int(self.left), int(self.top))
+        # return json.dumps(self.__dict__)
+
+    # def toJSON(self):
+    #     return json.dumps(self.__dict__)
 
     def copy(self):
         newone = type(self)(int(self.height), int(self.width), centerX = self.centerX, centerY = self.centerY)
