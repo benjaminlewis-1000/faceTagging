@@ -9,7 +9,7 @@ import xmltodict
 import get_picasa_faces
 import re
 import pickle
-import classify_faces
+# import classify_faces
 
 path_to_script = os.path.dirname(os.path.realpath(__file__))
 
@@ -145,7 +145,7 @@ class FaceExtractTester(unittest.TestCase):
                         expected_num_faces = pickle.load(fh)[0]
                         assert expected_num_faces == len(matched)
 
-
+    '''
     def test_classification(self):
 
         face_list_file = os.path.join(self.test_photo_dir, 'class_list.pkl')
@@ -177,6 +177,7 @@ class FaceExtractTester(unittest.TestCase):
                 all_matches = pickle.load(fh)[0]
 
         classify_faces.sort_common_faces(all_matches, num_inst_thresh = 10)
+    '''
 
     def test_get_xmp(self):
         for photo in self.photos_list:

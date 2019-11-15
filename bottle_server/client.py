@@ -1,31 +1,5 @@
 
-''' 
-### This is for sending opened images as numpy arrays.
-
-from __future__ import print_function
-import requests
-import json
-import cv2
-
-addr = 'http://localhost:5000'
-test_url = addr + '/api/test'
-
-# prepare headers for http request
-content_type = 'image/jpeg'
-headers = {'content-type': content_type}
-
-img = cv2.imread('lena.png')
-# encode image as jpeg
-_, img_encoded = cv2.imencode('.jpg', img)
-# send http request with image and receive response
-response = requests.post(test_url, data=img_encoded.todata_string(), headers=headers)
-# decode response
-print(json.loads(response.text))
-
-# expected output: {u'message': u'image received. size=124x124'}
-'''
-
-# This will read the *entire* file as a data_string and send it over flask.
+# This will read the *entire* image file as a data_string and send it over flask.
 
 # import flask
 import base64
@@ -70,6 +44,7 @@ try:
 except requests.exceptions.ConnectionError:
     print("Oh well")
     exit()
+
 
 
 

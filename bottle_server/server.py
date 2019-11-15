@@ -3,10 +3,13 @@ import jsonpickle
 import numpy as np
 import json
 import cv2
+import io
 import base64
 from get_picasa_faces import Get_XMP_Faces
 from rectangle import Point, Rectangle
 import hashlib
+from PIL import Image
+import face_recognition
 
 # Initialize the Flask application
 app = Flask(__name__)
@@ -64,41 +67,47 @@ def test():
 @app.route('/api/test_fullfile', methods=['POST'])
 def test_fullfile():
     r = request
-    # 
+
     if not request.content_type == 'text':
         raise ValueError("Posted data must be text.")
-    # print((r.data)) # nparr = np.fromstring(r.data, np.uint8)
 
-
+    # Load the dict from the request. It should have a base64_file and
+    # a checksum field.
     data = json.loads(r.data)
     file_data = data['base64_file']
+    # Convert the string to bytes. We know that the string 
+    # is a base64 string encoded using utf-8.
     file_data = file_data.encode('utf-8')
+    # Get the hex checksum from the payload
     checksum_data = data['checksum']
 
+    # Compute the md5 checksum of the binary string. It should
+    # match that of the checksum payload. 
     loc_checksum = hashlib.md5(file_data)
     loc_checksum = loc_checksum.hexdigest()
 
+    # If checksums don't match, send information back to client. 
     if checksum_data != loc_checksum:
+        response = {'success': False, 'message': 'Bad image -- does not match the checksum.' } 
 
-        # # build a response dict to send back to client
-        response = {'success': False, 'message': 'Bad image -- does not match the checksum.' } #{}x{}'.format(img.shape[1], img.shape[0])}
         # # encode response using jsonpickle
         response_pickled = jsonpickle.encode(response)
         return Response(response=response_pickled, status=200, mimetype="application/json")
 
-    file = open('tmp.jpg', 'wb')
-    file.write(base64.b64decode(file_data))
-    file.close() 
-    # # decode image
-    # # img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    # Shove that file data into a BytesIO object that can
+    # be read using PIL. The key to getting string data back
+    # from this IO object is to use getvalue, not read.
+    dt = base64.b64decode(file_data)
+    file = io.BytesIO(dt)
 
-    xmp_data = Get_XMP_Faces('tmp.jpg')
-    # print(xmp_data)
+    # Open the image as a numpy image for face recognition. 
+    image = face_recognition.load_image_file(file)
+
+    # Retrieve the XMP faces. 
+    file = io.BytesIO(dt)
+    xmp_data = Get_XMP_Faces(file)
+
     enc = (json.dumps(xmp_data, cls=CustomEncoder))
-    # print("------------------------")
-    # print(json.loads(enc, object_hook = decode_object))
-
-    # # do some fancy processing here....
 
     # # build a response dict to send back to client
     response = {'success': True, 'message': 'image received and processed', 'xmp_data': enc } #{}x{}'.format(img.shape[1], img.shape[0])}

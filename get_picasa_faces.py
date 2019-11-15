@@ -12,6 +12,7 @@ import cv2
 from rectangle import Rectangle as rec
 import re
 import binascii
+import io
 import xml
 import xmltodict
 import collections
@@ -28,24 +29,37 @@ import matplotlib.pyplot as plt
     
 #     return reduce(lambda x,y:x+y, lst)
 
+
+
 # This function will extract the XMP Bag Tag and Picasa faces
 def Get_XMP_Faces(file, test=False):
-    # initialize our return data
+
     file_data = None
-    try:
-        # attempt to open the file as binary
-        file_as_binary = open(file,'rb')
-        # if it opened try to read the file
-        file_data = file_as_binary.read()
-        # close the file afterward done
-        file_as_binary.close()
-    except:
-        # if we sell the open the file abort
+
+    if isinstance(file, str):
+        try:
+            # attempt to open the file as binary
+            file_as_binary = open(file,'rb')
+            # if it opened try to read the file
+            file_data = file_as_binary.read()
+            # close the file afterward done
+            file_as_binary.close()
+        except:
+            # if we sell the open the file abort
+            return False, None
+
+    elif isinstance(file, io.BytesIO):
+        # getvalue, not read
+        file_data = file.getvalue()
+
+    else:
         return False, None
- 
-    # if the file is empty abort
+
     if file_data is None:
         return False, None
+
+
+    image = face_recognition.load_image_file(file)
  
     # using the file data, attempt to locate the starting XMP XML Bag tag
     # print(type(file_data))
@@ -63,6 +77,7 @@ def Get_XMP_Faces(file, test=False):
         xmp_end = (file_data).find('</rdf:Bag') + 10
         xmp_data = (file_data)[xmp_start:xmp_end ]
         bag_tags.append(xmp_data)
+
 
     persons = []
     for bag in bag_tags:
@@ -95,7 +110,7 @@ def Get_XMP_Faces(file, test=False):
             pass
 
     # X and Y are locations in the middle of the face. 
-    image = face_recognition.load_image_file(file)
+    # image = face_recognition.load_image_file(file)
     img_height, img_width, _ = image.shape
 
     for p_num in range(len(persons)-1, -1, -1):
@@ -136,12 +151,6 @@ def Get_XMP_Faces(file, test=False):
 
         cv2.rectangle(image, (left, top), (right, bottom), (255, 0, 0), 5)
 
-    # print(persons)
-    # plt.imshow(image)
-    # plt.show()
-    # print(xmp_start, xmp_end)
-    # if the tag is found, -1 is used and we get "" else we get data
-    # xmp_bag = file_data[xmp_start:xmp_end+len("</rdf:Bag>")]
  
     # if nothing is found abort
     if len(bag_tags) == 0:
@@ -150,6 +159,24 @@ def Get_XMP_Faces(file, test=False):
  
     #  if we found something, return tag information
     return True, persons
+
+
+    # success, persons = process_image(file_data, image)
+    # return success, persons
+
+# def Get_XMP_Faces_byteIO(file_string, file_image, bytesi, test=False):
+
+#     print(bytesi.getvalue()[:5000])
+#     print(file_string[:5000])
+
+#     file_data = bytesi.getvalue()
+
+#     # if the file is empty abort
+#     if file_data is None:
+#         return False, None
+
+#     success, persons = process_image(file_data, file_image)
+#     return success, persons
 
 '''
 

@@ -22,20 +22,22 @@ coloredlogs.install()
 params1 = {'upsample': 2, 'height': 600, 'width': 300}
 path_to_script = os.path.dirname(os.path.realpath(__file__))
 
-def imageFaceDetect(image_path, parameter_file='parameters.xml'):
-    assert isinstance(image_path, str)
-    assert os.path.isfile(parameter_file)
+# def imageFaceDetect(image_path, parameter_file='parameters.xml'):
+#     assert isinstance(image_path, str)
+#     assert os.path.isfile(parameter_file)
 
-    with open(parameter_file, 'r') as fh:
-        parameters = xmltodict.parse(fh.read())
+#     with open(parameter_file, 'r') as fh:
+#         parameters = xmltodict.parse(fh.read())
 
-    ml_detected_faces, tagged_faces = extract_faces_from_image(image_path, parameters)
+#     ml_detected_faces, tagged_faces = extract_faces_from_image(image_path, parameters)
 
 def extract_faces_from_image(image_path, parameters):
     assert isinstance(image_path, str)
     assert os.path.isfile(image_path)
+
     assert 'params' in parameters.keys()
     assert 'tiled_detect_params' in parameters['params']
+
 
     tiled_params = parameters['params']['tiled_detect_params']
 
@@ -43,7 +45,7 @@ def extract_faces_from_image(image_path, parameters):
 
     ml_detected_faces = tiled_detect.detect_pyramid(npImage, tiled_params)
 
-    success_faces, tagged_faces = get_picasa_faces.Get_XMP_Faces(image_path)
+    success_faces, tagged_faces = get_picasa_faces.Get_XMP_Faces_file(image_path)
 
     assert success_faces, 'Picasa face extraction failed.'
 
