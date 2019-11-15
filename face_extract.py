@@ -13,6 +13,7 @@ import time
 import tiled_detect
 import logging
 import face_rect
+import io
 import xmltodict
 import matplotlib.pyplot as plt
 import get_picasa_faces
@@ -32,20 +33,20 @@ path_to_script = os.path.dirname(os.path.realpath(__file__))
 #     ml_detected_faces, tagged_faces = extract_faces_from_image(image_path, parameters)
 
 def extract_faces_from_image(image_path, parameters):
-    assert isinstance(image_path, str)
-    assert os.path.isfile(image_path)
+    assert isinstance(image_path, str) or isinstance(image_path, io.BytesIO)
+    if isinstance(image_path, str):
+        assert os.path.isfile(image_path)
 
     assert 'params' in parameters.keys()
     assert 'tiled_detect_params' in parameters['params']
-
 
     tiled_params = parameters['params']['tiled_detect_params']
 
     npImage = face_recognition.load_image_file(image_path)
 
-    ml_detected_faces = tiled_detect.detect_pyramid(npImage, tiled_params)
+    success_faces, tagged_faces = get_picasa_faces.Get_XMP_Faces(image_path)
 
-    success_faces, tagged_faces = get_picasa_faces.Get_XMP_Faces_file(image_path)
+    ml_detected_faces = tiled_detect.detect_pyramid(npImage, tiled_params)
 
     assert success_faces, 'Picasa face extraction failed.'
 

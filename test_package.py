@@ -8,6 +8,8 @@ import numpy as np
 import xmltodict
 import get_picasa_faces
 import re
+import base64
+import io
 import pickle
 # import classify_faces
 
@@ -79,6 +81,40 @@ class rectangleTester(unittest.TestCase):
     #     print(merged)
     #     self.assertEqual(merged, Rectangle(25, 25, leftEdge = 20, topEdge = 20))
 
+
+class FaceExtractTesterByteIO(unittest.TestCase):
+    def setUp(self):
+        self.test_photo_dir = os.path.join(path_to_script, 'test_imgs')
+        self.photos_list = []
+        for root, dirs, files in os.walk(self.test_photo_dir):
+            for f in files:
+                if f.lower().endswith(('.jpeg', '.jpg')):
+                    self.photos_list.append(os.path.join(root, f))
+
+
+        parameter_file='parameters.xml'
+        with open(parameter_file, 'r') as fh:
+            self.parameters = xmltodict.parse(fh.read())
+
+    def __image_to_ByteIO__(self, photo_file):
+        with open(photo_file, 'rb') as imageFile:
+            data_str = base64.b64encode(imageFile.read())
+
+        data = base64.b64decode(data_str)
+        file = io.BytesIO(data)
+
+        return file
+
+    def test_one_photo_facedetect(self):
+        # for photo in self.photos_list:
+        for photo in self.photos_list[1:]:
+            photo = self.__image_to_ByteIO__(photo)
+            ml_faces, tagged_faces = face_extract.extract_faces_from_image(photo, self.parameters)
+            if len(ml_faces) > 0:
+                break
+        # Assert that we at least are getting one image
+        # with a detected face. 
+        self.assertTrue(len(ml_faces) > 0)
 
 class FaceExtractTester(unittest.TestCase):
     def setUp(self):
