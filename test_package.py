@@ -1,12 +1,12 @@
 #! /usr/bin/env python
 
-from rectangle import Rectangle, rectangleError
 import unittest
 import face_extract
 import os
 import numpy as np
 import xmltodict
-import get_picasa_faces
+# import get_picasa_faces
+import face_extraction
 import re
 import base64
 import io
@@ -20,31 +20,31 @@ class rectangleTester(unittest.TestCase):
         pass
 
     def test_make_rect(self):
-        a = Rectangle(50, 40, centerX=5, centerY=5)
-        b = Rectangle(50, 40, leftEdge=3, topEdge=6)
+        a = face_extraction.Rectangle(50, 40, centerX=5, centerY=5)
+        b = face_extraction.Rectangle(50, 40, leftEdge=3, topEdge=6)
 
     def test_missing_args(self):
-        with self.assertRaises(rectangleError):
-            a = Rectangle(50, 40)
-        with self.assertRaises(rectangleError):
-            a = Rectangle(50, 40, centerX = 5)
-        with self.assertRaises(rectangleError):
-            a = Rectangle(50, 40, centerX=5, centerY=5, leftEdge=3)
-        with self.assertRaises(rectangleError):
-            a = Rectangle(50, 40, centerX=5, centerY=5, leftEdge=3, topEdge=6)
-        with self.assertRaises(rectangleError):
-            a = Rectangle(50, 40, leftEdge=3)
+        with self.assertRaises(face_extraction.rectangleError):
+            a = face_extraction.Rectangle(50, 40)
+        with self.assertRaises(face_extraction.rectangleError):
+            a = face_extraction.Rectangle(50, 40, centerX = 5)
+        with self.assertRaises(face_extraction.rectangleError):
+            a = face_extraction.Rectangle(50, 40, centerX=5, centerY=5, leftEdge=3)
+        with self.assertRaises(face_extraction.rectangleError):
+            a = face_extraction.Rectangle(50, 40, centerX=5, centerY=5, leftEdge=3, topEdge=6)
+        with self.assertRaises(face_extraction.rectangleError):
+            a = face_extraction.Rectangle(50, 40, leftEdge=3)
 
 
     def test_intersect(self):
-        r1 = Rectangle(20, 20, centerX = 30, centerY = 30)
-        r2 = Rectangle(20, 20, centerX = 35, centerY = 35)
+        r1 = face_extraction.Rectangle(20, 20, centerX = 30, centerY = 30)
+        r2 = face_extraction.Rectangle(20, 20, centerX = 35, centerY = 35)
         ovd = r1.intersect(r2)
         self.assertEqual(ovd, 225)
 
     def test_iou(self):
-        r1 = Rectangle(20, 20, centerX = 30, centerY = 30)
-        r2 = Rectangle(20, 20, centerX = 40, centerY = 30)
+        r1 = face_extraction.Rectangle(20, 20, centerX = 30, centerY = 30)
+        r2 = face_extraction.Rectangle(20, 20, centerX = 40, centerY = 30)
 
         self.assertNotEqual(r1.IOU(r2), 1)
         self.assertNotEqual(r1.IOU(r2), 0)
@@ -52,15 +52,15 @@ class rectangleTester(unittest.TestCase):
         self.assertEqual(r2.IOU(r2), 1)
 
 
-        r1 = Rectangle(20, 20, centerX=10, centerY = 10)
-        r2 = Rectangle(20, 20, centerX=20, centerY = 10)
+        r1 = face_extraction.Rectangle(20, 20, centerX=10, centerY = 10)
+        r2 = face_extraction.Rectangle(20, 20, centerX=20, centerY = 10)
         self.assertEqual(r1.IOU(r2), 1/3)
 
-        r2 = Rectangle(20, 20, centerX=50, centerY=20)
+        r2 = face_extraction.Rectangle(20, 20, centerX=50, centerY=20)
         self.assertEqual(r1.IOU(r2), 0)
 
     def test_resizing(self):
-        a = Rectangle(50, 43, leftEdge=10, topEdge = 15)
+        a = face_extraction.Rectangle(50, 43, leftEdge=10, topEdge = 15)
         # print(a)
         a_size = 50 * 43
         a.resize(2)
@@ -74,12 +74,12 @@ class rectangleTester(unittest.TestCase):
     #     raise NotImplementedError
 
     # def test_merge(self):
-    #     r1 = Rectangle(20, 20, centerX = 30, centerY = 30)
-    #     r2 = Rectangle(20, 20, centerX = 35, centerY = 35)
+    #     r1 = face_extraction.Rectangle(20, 20, centerX = 30, centerY = 30)
+    #     r2 = face_extraction.Rectangle(20, 20, centerX = 35, centerY = 35)
     #     # print(a)
     #     merged = r1.mergeWith(r2)
     #     print(merged)
-    #     self.assertEqual(merged, Rectangle(25, 25, leftEdge = 20, topEdge = 20))
+    #     self.assertEqual(merged, face_extraction.Rectangle(25, 25, leftEdge = 20, topEdge = 20))
 
 
 
@@ -106,7 +106,7 @@ class FaceExtractTester(unittest.TestCase):
         for photo in self.photos_list[1:]:
             print(photo)
             photo, filename = self.__image_preprocess__(photo)
-            ml_faces, tagged_faces = face_extract.extract_faces_from_image(photo, self.parameters)
+            ml_faces, tagged_faces, _ = face_extract.extract_faces_from_image(photo, self.parameters)
             if len(ml_faces) > 0:
                 break
         # Assert that we at least are getting one image
@@ -138,7 +138,7 @@ class FaceExtractTester(unittest.TestCase):
 
             test_bigface = False
             num_faces_file = re.sub('.(jpg|JPEG|JPG|jpeg)$', '_numface.pkl', filename)
-            matched = face_extract.associate_detections_and_tags(photo, ml_faces, tagged_faces, disp_photo=False, test=test_bigface)
+            matched = face_extract.associate_detections_and_tags(photo, ml_faces, tagged_faces, disp_photo=True, test=test_bigface)
 
             all_matches += matched
 
@@ -191,7 +191,7 @@ class FaceExtractTester(unittest.TestCase):
     def test_get_xmp(self):
         for photo in self.photos_list:
             photo, filename = self.__image_preprocess__(photo)
-            success, saved_faces = get_picasa_faces.Get_XMP_Faces(photo)
+            success, saved_faces = face_extraction.Get_XMP_Faces(photo)
             self.assertTrue(success)
 
     # def test_get_face_rotations(self):

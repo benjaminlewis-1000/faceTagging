@@ -3,9 +3,9 @@
 # Fully-connected network for classifying faces as people.
 
 import numpy as np
-import face_rect
 import sys
 from pympler import asizeof
+import face_extraction
 
 import torch
 import torch.nn as nn
@@ -35,7 +35,7 @@ class FCN(nn.Module):
 
 def sort_common_faces(list_of_facerects, num_inst_thresh=150):
     assert isinstance(list_of_facerects, list)
-    assert isinstance(list_of_facerects[0], face_rect.FaceRect)
+    assert isinstance(list_of_facerects[0], face_extraction.FaceRect)
 
     ignored_names = ['.realignore', '.ignore']
 

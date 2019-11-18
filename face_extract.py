@@ -3,27 +3,24 @@
 import face_recognition 
 import os
 import cv2
-from rectangle import Rectangle
 import numpy as np
 import scipy.misc
 import itertools
+import face_extraction
 import coloredlogs
 import random
 import time
-import tiled_detect
 import logging
-import face_rect
 import io
 import xmltodict
 import matplotlib.pyplot as plt
-import get_picasa_faces
 
 coloredlogs.install()
 
 params1 = {'upsample': 2, 'height': 600, 'width': 300}
 path_to_script = os.path.dirname(os.path.realpath(__file__))
 
-# def imageFaceDetect(image_path, parameter_file='parameters.xml'):
+# def detect_and_merge_faces(image_path, parameter_file='parameters.xml'):
 #     assert isinstance(image_path, str)
 #     assert os.path.isfile(parameter_file)
 
@@ -31,6 +28,9 @@ path_to_script = os.path.dirname(os.path.realpath(__file__))
 #         parameters = xmltodict.parse(fh.read())
 
 #     ml_detected_faces, tagged_faces = extract_faces_from_image(image_path, parameters)
+
+#     matched = associate_detections_and_tags(image_path, ml_detected_faces, tagged_faces, disp_photo=False, test=test_bigface)
+
 
 def extract_faces_from_image(image_path, parameters):
     assert isinstance(image_path, str) or isinstance(image_path, io.BytesIO)
@@ -44,13 +44,15 @@ def extract_faces_from_image(image_path, parameters):
 
     npImage = face_recognition.load_image_file(image_path)
 
-    success_faces, tagged_faces = get_picasa_faces.Get_XMP_Faces(image_path)
+    success_faces, tagged_faces = face_extraction.Get_XMP_Faces(image_path)
 
-    ml_detected_faces = tiled_detect.detect_pyramid(npImage, tiled_params)
+    ml_detected_faces = face_extraction.detect_pyramid(npImage, tiled_params)
 
     assert success_faces, 'Picasa face extraction failed.'
 
-    return ml_detected_faces, tagged_faces
+    matched_faces = associate_detections_and_tags(image_path, ml_detected_faces, tagged_faces, disp_photo=False, test=False)
+
+    return ml_detected_faces, tagged_faces, matched_faces
 
 def join_faces(pristine_image, tag_face, det_face=None):
     # This is used either to turn a tagged face into
@@ -61,7 +63,7 @@ def join_faces(pristine_image, tag_face, det_face=None):
     assert 'Name' in tag_face.keys()
     assert tag_face['Name'] is not None
     if det_face is not None:
-        assert isinstance(det_face, face_rect.FaceRect)
+        assert isinstance(det_face, face_extraction.FaceRect)
 
     if det_face is not None:
         rect_intersect = tag_face['bounding_rectangle'].intersect(det_face.rectangle)
@@ -93,7 +95,7 @@ def join_faces(pristine_image, tag_face, det_face=None):
 
     face_image = pristine_image[rect.top:rect.bottom, rect.left:rect.right]
 
-    fr = face_rect.FaceRect(rect, face_image, detection_level, encoding, name)
+    fr = face_extraction.FaceRect(rect, face_image, detection_level, encoding, name)
 
     return fr
 
@@ -101,7 +103,7 @@ def associate_detections_and_tags(image_path, detected_faces, tagged_faces, disp
 
     if len(detected_faces) > 0:
         for df in detected_faces:
-            assert isinstance(df, face_rect.FaceRect)
+            assert isinstance(df, face_extraction.FaceRect)
 
     if len(tagged_faces) > 0: 
         for tf in tagged_faces:
@@ -116,7 +118,7 @@ def associate_detections_and_tags(image_path, detected_faces, tagged_faces, disp
         image_path)
 
     if test:
-        huge_face = {'Name': "nada", 'bounding_rectangle': Rectangle(int(image.shape[0] * .95), int(image.shape[1] * .95), centerX = image.shape[1]// 2, centerY  = image.shape[0] // 2)}
+        huge_face = {'Name': "nada", 'bounding_rectangle': face_extraction.Rectangle(int(image.shape[0] * .95), int(image.shape[1] * .95), centerX = image.shape[1]// 2, centerY  = image.shape[0] // 2)}
         tagged_faces.append(huge_face)
 
     if disp_photo:
@@ -131,15 +133,13 @@ def associate_detections_and_tags(image_path, detected_faces, tagged_faces, disp
     if disp_photo:
         for d in merged_detections:
             d.rectangle.drawOnPhoto(draw_image, colorTriple=(0, 0, 255))
-        # plt.figure()
-        # plt.imshow(draw_image)
-        # plt.show()
 
     fully_matched = _merge_detections_with_tags(merged_detections, tagged_faces, pristine_image)
 
     if disp_photo:
         for df in fully_matched:
             rr = df.rectangle.copy()
+            # Expand the rectangle +- 10 pixels in each direction
             rr.left = rr.left - 10
             rr.top = rr.top - 10
             rr.width = rr.width + 20
@@ -380,7 +380,7 @@ def _merge_detections_with_tags(merged_detections, tagged_faces, pristine_image)
 
     # Assertions for case 2
     for m in matched_face_rects:
-        assert isinstance(m, face_rect.FaceRect)
+        assert isinstance(m, face_extraction.FaceRect)
     assert len(set(merged_detections).intersection(set(matched_face_rects) ) ) == 0
     # Assert that everything else has IOUs. 
     for t in tagged_faces:

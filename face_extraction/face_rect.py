@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-from rectangle import Rectangle as rectangle
+from .rectangle import Rectangle
 import numpy as np
 import hashlib
 
@@ -128,7 +128,7 @@ class FaceRect:
         # print(new_rect_left, self.rectangle.left, face.rectangle.left)
         # print(new_rect_right, self.rectangle.right, face.rectangle.right)
 
-        new_rect = rectangle(new_height, new_width, leftEdge=new_rect_left, topEdge=new_rect_top)
+        new_rect = Rectangle(new_height, new_width, leftEdge=new_rect_left, topEdge=new_rect_top)
 
         face_image = np_image[new_rect_top:new_rect_bottom, new_rect_left:new_rect_right]
 
