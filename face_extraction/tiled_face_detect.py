@@ -164,7 +164,7 @@ def detect_pyramid(cv_image, parameters):
 
                     face_img = cv_image[top_scaled:bottom_scaled, left_scaled:right_scaled]
 
-                    face_loc_rect = face_extraction.Rectangle(height_face, width_face, leftEdge = left_scaled, topEdge = top_scaled)
+                    face_loc_rect = Rectangle(height_face, width_face, leftEdge = left_scaled, topEdge = top_scaled)
 
                     face = FaceRect(rectangle = face_loc_rect, face_image = face_img, encoding = encoding, name=None, detection_level = cuts)
                     # Append the face to the list. No effort to de-duplicate

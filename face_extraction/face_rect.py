@@ -60,15 +60,22 @@ class FaceRect:
         this_inside_other = intersect_area / self.rectangle.area
         other_inside_this = intersect_area / face.rectangle.area
         insideness = max(this_inside_other, other_inside_this)
+        # If one of the rectangles is basically the entire photo,
+        # then reject it as a merge possibility. 
         too_big_insideness = min(this_inside_other, other_inside_this)
+        # Calculate absolute and normalized distances between the 
+        # rectangles. 
         dist, norm_dist = self.rectangle.distance(face.rectangle)
 
+        # If one rectangle is less than 4% the size of the other
+        # rectangle, then we will reject it. 
         if too_big_insideness < 0.04:
             return False
 
         if enc_dist < enc_thresh:
             enc_score = 1
         else:
+            # We want this to taper off pretty quickly.
             enc_score = (1 - abs(enc_dist - enc_thresh) ) ** 5
 
         if insideness > intersect_thresh:

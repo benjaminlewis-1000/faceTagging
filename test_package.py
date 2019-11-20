@@ -1,17 +1,19 @@
 #! /usr/bin/env python
 
 import unittest
-import face_extract
 import os
 import numpy as np
 import xmltodict
 # import get_picasa_faces
 import face_extraction
+import dlib
 import re
 import base64
 import io
 import pickle
 # import classify_faces
+
+dlib.DLIB_USE_CUDA = True
 
 path_to_script = os.path.dirname(os.path.realpath(__file__))
 
@@ -106,7 +108,7 @@ class FaceExtractTester(unittest.TestCase):
         for photo in self.photos_list[1:]:
             print(photo)
             photo, filename = self.__image_preprocess__(photo)
-            ml_faces, tagged_faces, _ = face_extract.extract_faces_from_image(photo, self.parameters)
+            _, ml_faces, tagged_faces = face_extraction.extract_faces_from_image(photo, self.parameters)
             if len(ml_faces) > 0:
                 break
         # Assert that we at least are getting one image
@@ -127,7 +129,7 @@ class FaceExtractTester(unittest.TestCase):
             print(p, filename)
             out_file = re.sub('.(jpg|JPEG|JPG|jpeg)$', '.pkl', filename)
             if not os.path.isfile(out_file) or redo:
-                ml_faces, tagged_faces = face_extract.extract_faces_from_image(photo, self.parameters)
+                _, ml_faces, tagged_faces = face_extraction.extract_faces_from_image(photo, self.parameters)
                 assert ml_faces is not None
                 assert tagged_faces is not None
                 with open(out_file, 'wb') as fh:
@@ -138,9 +140,8 @@ class FaceExtractTester(unittest.TestCase):
 
             test_bigface = False
             num_faces_file = re.sub('.(jpg|JPEG|JPG|jpeg)$', '_numface.pkl', filename)
-            matched = face_extract.associate_detections_and_tags(photo, ml_faces, tagged_faces, disp_photo=True, test=test_bigface)
+            matched = face_extraction.associate_detections_and_tags(photo, ml_faces, tagged_faces, disp_photo=False, test=test_bigface)
 
-            all_matches += matched
 
             if test_bigface:
                 pass
@@ -152,6 +153,7 @@ class FaceExtractTester(unittest.TestCase):
                 else:
                     with open(num_faces_file, 'rb') as fh:
                         expected_num_faces = pickle.load(fh)[0]
+                        # print(len(matched), expected_num_faces)
                         assert expected_num_faces == len(matched)
 
     '''
@@ -165,7 +167,7 @@ class FaceExtractTester(unittest.TestCase):
                 print(photo)
                 out_file = re.sub('.(jpg|JPEG|JPG|jpeg)$', '.pkl', photo)
                 if not os.path.isfile(out_file):
-                    ml_faces, tagged_faces = face_extract.extract_faces_from_image(photo, self.parameters)
+                    _, ml_faces, tagged_faces = face_extract.extract_faces_from_image(photo, self.parameters)
                     assert ml_faces is not None
                     assert tagged_faces is not None
                     with open(out_file, 'wb') as fh:
@@ -210,7 +212,6 @@ class FaceExtractTesterByteIO(FaceExtractTester):
         file = io.BytesIO(data)
 
         return file, photo_file
-
 
 if __name__ == '__main__':
     unittest.main()
