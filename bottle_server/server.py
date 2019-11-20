@@ -1,3 +1,13 @@
+#! /usr/bin/env python
+
+import os
+import sys
+
+PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+print(PARENT_DIR)
+sys.path.append(PARENT_DIR)
+
+
 from flask import Flask, request, Response
 import jsonpickle
 import numpy as np
@@ -5,43 +15,42 @@ import json
 import cv2
 import io
 import base64
-from get_picasa_faces import Get_XMP_Faces
-from rectangle import Point, Rectangle
+import face_extraction
+# from get_picasa_faces import Get_XMP_Faces
+# from rectangle import Point, Rectangle
 import hashlib
 from PIL import Image
 import face_recognition
+import xmltodict
 
 # Initialize the Flask application
 app = Flask(__name__)
 
 # Source of JSON encoder: https://code.tutsplus.com/tutorials/serialization-and-deserialization-of-python-objects-part-1--cms-26183
 class CustomEncoder(json.JSONEncoder):
-     def default(self, o):
-         return {'__{}__'.format(o.__class__.__name__): o.__dict__}
 
-def decode_object(o):
+    def default(self, o):
+        return {'__{}__'.format(o.__class__.__name__): o.__dict__}
+
+# def decode_object(o):
  
-    if '__Point__' in o:
+#     if '__Point__' in o:
  
-        a = Point(0, 0)
+#         a = face_extraction.Point(0, 0)
  
-        a.__dict__.update(o['__Point__'])
+#         a.__dict__.update(o['__Point__'])
  
-        return a
+#         return a
  
-    elif '__Rectangle__' in o:
+#     elif '__Rectangle__' in o:
  
-        a = Rectangle(10, 10, centerX = 5, centerY = 5)
+#         a = face_extraction.Rectangle(10, 10, centerX = 5, centerY = 5)
  
-        a.__dict__.update(o['__Rectangle__'])
+#         a.__dict__.update(o['__Rectangle__'])
  
-        return a
+#         return a
  
-    elif '__datetime__' in o:
- 
-        return datetime.strptime(o['__datetime__'], '%Y-%m-%dT%H:%M:%S')        
- 
-    return o
+#     return o
 
 
 # route http posts to this method
@@ -105,7 +114,22 @@ def test_fullfile():
 
     # Retrieve the XMP faces. 
     file = io.BytesIO(dt)
-    xmp_data = Get_XMP_Faces(file)
+    xmp_data = face_extraction.Get_XMP_Faces(file)
+
+
+    parameter_file=os.path.join(PARENT_DIR, 'parameters.xml')
+    with open(parameter_file, 'r') as fh:
+        parameters = xmltodict.parse(fh.read())
+
+    matched_faces, _, _ = face_extraction.extract_faces_from_image(file, parameters)
+    matched_faces == matched_faces
+    for idx in range(len(matched_faces)):
+        encoding = matched_faces[idx].encoding
+        matched_faces[idx].encoding = encoding.tolist()
+        image = matched_faces[idx].image
+        matched_faces[idx].image = image.tolist()
+
+    xmp_data = matched_faces
 
     enc = (json.dumps(xmp_data, cls=CustomEncoder))
 

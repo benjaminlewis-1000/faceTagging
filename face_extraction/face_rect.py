@@ -27,14 +27,14 @@ class FaceRect:
         return int(m.hexdigest(), 16)
 
     def __str__(self):
-        return "rectangle = {}, name = {}".\
+        return "rectangle = {}, name = {}, encoding = {}...".\
             format(self.rectangle, self.name, \
-                self.encoding)
+                self.encoding[0:5])
 
     def __repr__(self):
-        return "rectangle = {}, name = {}".\
+        return "rectangle = {}, name = {}, encoding = {}...".\
             format(self.rectangle, self.name, \
-                self.encoding)
+                self.encoding[0:5])
 
     def __assert_cmp_to_face__(self, face):
         assert isinstance(face, FaceRect), \
