@@ -1,1 +1,0 @@
-/home/lewisbp/snippets/face_id/face_extraction/rectangle.py

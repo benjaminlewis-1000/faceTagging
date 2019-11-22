@@ -6,4 +6,8 @@
 		<height>600</height>
 		<width>300</width>
 	</tiled_detect_params>
+	<server>
+		<port_flask>5000</port_flask>
+		<port_ip_disc>37020</port_ip_disc>
+	</server>
 </params>

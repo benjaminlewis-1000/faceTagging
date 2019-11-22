@@ -16,12 +16,14 @@ import cv2
 import io
 import base64
 import face_extraction
+import xmltodict
 # from get_picasa_faces import Get_XMP_Faces
 # from rectangle import Point, Rectangle
 import hashlib
 from PIL import Image
 import face_recognition
 import xmltodict
+from server_ip_discover import ip_responder
 
 # Initialize the Flask application
 app = Flask(__name__)
@@ -32,48 +34,21 @@ class CustomEncoder(json.JSONEncoder):
     def default(self, o):
         return {'__{}__'.format(o.__class__.__name__): o.__dict__}
 
-# def decode_object(o):
- 
-#     if '__Point__' in o:
- 
-#         a = face_extraction.Point(0, 0)
- 
-#         a.__dict__.update(o['__Point__'])
- 
-#         return a
- 
-#     elif '__Rectangle__' in o:
- 
-#         a = face_extraction.Rectangle(10, 10, centerX = 5, centerY = 5)
- 
-#         a.__dict__.update(o['__Rectangle__'])
- 
-#         return a
- 
-#     return o
 
-
-# route http posts to this method
-@app.route('/api/test', methods=['POST'])
-def test():
+@app.route('/api/alive', methods=['POST'])
+def alive():
     r = request
-    # convert string of image data to uint8
-    nparr = np.fromstring(r.data, np.uint8)
-    # decode image
-    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-    # do some fancy processing here....
 
     # build a response dict to send back to client
-    response = {'message': 'image received. size={}x{}'.format(img.shape[1], img.shape[0])
-                }
+    response = {'message': 'alive'}
+
     # encode response using jsonpickle
     response_pickled = jsonpickle.encode(response)
 
     return Response(response=response_pickled, status=200, mimetype="application/json")
 
 # route http posts to this method
-@app.route('/api/test_fullfile', methods=['POST'])
+@app.route('/api/face_extract', methods=['POST'])
 def test_fullfile():
     r = request
 
@@ -116,7 +91,6 @@ def test_fullfile():
     file = io.BytesIO(dt)
     xmp_data = face_extraction.Get_XMP_Faces(file)
 
-
     parameter_file=os.path.join(PARENT_DIR, 'parameters.xml')
     with open(parameter_file, 'r') as fh:
         parameters = xmltodict.parse(fh.read())
@@ -129,19 +103,31 @@ def test_fullfile():
         image = matched_faces[idx].image
         matched_faces[idx].image = image.tolist()
 
-    xmp_data = matched_faces
+    matched_faces
 
-    enc = (json.dumps(xmp_data, cls=CustomEncoder))
+    enc = (json.dumps(matched_faces, cls=CustomEncoder))
 
     # # build a response dict to send back to client
-    response = {'success': True, 'message': 'image received and processed', 'xmp_data': enc } #{}x{}'.format(img.shape[1], img.shape[0])}
+    response = {'success': True, 'message': 'image received and processed', 'xmp_data': enc } 
+
     # # encode response using jsonpickle
     response_pickled = jsonpickle.encode(response)
-    # print(response_pickled)
 
     return Response(response=response_pickled, status=200, mimetype="application/json")
 
 
 if __name__ == "__main__":
     # start flask app
-    app.run(host="0.0.0.0", port=5000)
+    with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
+        config = xmltodict.parse(p.read())
+
+    port = int(config['params']['server']['port_flask'])
+
+    import threading
+
+    ip_thread = threading.Thread(target = ip_responder)
+    ip_thread.start()
+    # Do NOT join the thread -- it will cause the while True
+    # to block.
+
+    app.run(host="0.0.0.0", port=port)
