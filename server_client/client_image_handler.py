@@ -17,7 +17,7 @@ import numpy as np
 import cv2
 import hashlib
 import face_extraction
-from client_ip_discover import find_external_server
+from .client_ip_discover import find_external_server
 # from rectangle import Point, Rectangle
 
 
@@ -72,12 +72,12 @@ def image_for_network(filename):
 
     return payload, headers
 
-def main(filename):
+def face_extract_client(filename):
     ext_ip = find_external_server()
 
     with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
         config = xmltodict.parse(p.read())
-    port_flask = int(config['params']['server']['port_flask'])
+    port_image_handle = int(config['params']['server']['port_image_handle'])
     port_ip_disc = int(config['params']['server']['port_ip_disc'])
 
     process_local = True
@@ -85,7 +85,7 @@ def main(filename):
         process_local = True
     else:
         payload, headers = image_for_network(filename)
-        addr = f'http://{ext_ip}:{port_flask}'
+        addr = f'http://{ext_ip}:{port_image_handle}'
         alive_url = addr + '/api/alive'
         try:
             response = requests.post(alive_url, data=payload, headers=headers)
@@ -100,7 +100,7 @@ def main(filename):
     if process_local:
         matched_faces, _, _ = face_extraction.extract_faces_from_image(filename, config)
     else:
-        addr = f'http://{ext_ip}:{port_flask}'
+        addr = f'http://{ext_ip}:{port_image_handle}'
         face_extract_url = addr + '/api/face_extract'
 
         # send http request with image and receive response
@@ -120,23 +120,24 @@ def main(filename):
 
     return matched_faces
 
-mf = main('my_pic.jpg')
-# print(mf)
+if __name__ == "__main__":
+    mf = face_extract_client('my_pic.jpg')
+    # print(mf)
 
-test = False
-if test:
-    with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
-        config = xmltodict.parse(p.read())
-    mf2, _, _ = face_extraction.extract_faces_from_image('my_pic.jpg', config)
+    test = False
+    if test:
+        with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
+            config = xmltodict.parse(p.read())
+        mf2, _, _ = face_extraction.extract_faces_from_image('my_pic.jpg', config)
 
-    for f in range(len(mf)):
-        f1 = mf[f]
-        f2 = mf[f]
-        # print(f1)
-        assert np.mean(f1.encoding - f2.encoding) == 0
-        assert f1.name == f2.name
-        assert f1.rectangle == f2.rectangle
-    print("Test done!")
+        for f in range(len(mf)):
+            f1 = mf[f]
+            f2 = mf[f]
+            # print(f1)
+            assert np.mean(f1.encoding - f2.encoding) == 0
+            assert f1.name == f2.name
+            assert f1.rectangle == f2.rectangle
+        print("Test done!")
 
 
 
