@@ -190,7 +190,7 @@ def detect_pyramid(cv_image, parameters):
 #    cv2.imshow('Resized Window', cv_image)
 #    cv2.waitKey(0)
 
-    return faceList
+    return faceList, elapsed_time
 
 
 

@@ -148,3 +148,49 @@ class FaceRect:
             # TBD
         
         # We want a graceful fall-off. If < enc_thresh, then 100% for that, and so on.
+
+    def add_square_face(self, pristine_img):
+        
+        im_h, im_w, _ = pristine_img.shape
+        rect = self.rectangle
+
+        # Get a square face image as well. 
+        square_size = np.max(( rect.width, rect.height ))
+        if square_size > im_w:
+            square_size = im_w
+        if square_size > im_h:
+            square_size = im_h
+
+        half_size = square_size // 2
+
+        square_left = rect.centerX - half_size
+        square_right = rect.centerX + half_size
+        if square_left < 0:
+            square_left = 0
+            square_right = square_size
+        elif square_right > im_w:
+            square_right = im_w
+            square_left = square_right - square_size
+
+        square_top = rect.centerY - half_size
+        square_bot = rect.centerY + half_size
+        if square_top < 0:
+            square_top = 0
+            square_bot = square_size
+        elif square_bot > im_h:
+            square_bot = im_h
+            square_top = square_bot - square_size
+
+        square_top = int(square_top)
+        square_bot = int(square_bot)
+        square_left = int(square_left)
+        square_right = int(square_right)
+
+        square_img = pristine_img[square_top:square_bot, square_left:square_right]
+
+        sq_h, sq_w, ch = square_img.shape
+        assert ch == 3
+        assert sq_h == sq_w
+        assert sq_h > 0
+
+        self.square_face = square_img

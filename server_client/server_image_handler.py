@@ -17,16 +17,21 @@ import io
 import base64
 import face_extraction
 import xmltodict
-# from get_picasa_faces import Get_XMP_Faces
-# from rectangle import Point, Rectangle
+from server_ip_discover import ip_responder
 import hashlib
 from PIL import Image
 import face_recognition
 import xmltodict
-from .server_ip_discover import ip_responder
 
 # Initialize the Flask application
 app = Flask(__name__)
+try:
+    import dlib
+    using_cuda = dlib.DLIB_USE_CUDA
+except AttributeError:
+    using_cuda = False
+except ImportError:
+    using_cuda = False
 
 # Source of JSON encoder: https://code.tutsplus.com/tutorials/serialization-and-deserialization-of-python-objects-part-1--cms-26183
 class CustomEncoder(json.JSONEncoder):
@@ -40,7 +45,7 @@ def alive():
     r = request
 
     # build a response dict to send back to client
-    response = {'message': 'alive'}
+    response = {'message': 'alive', 'server_supports_cuda': using_cuda}
 
     # encode response using jsonpickle
     response_pickled = jsonpickle.encode(response)
@@ -95,7 +100,7 @@ def test_fullfile():
     with open(parameter_file, 'r') as fh:
         parameters = xmltodict.parse(fh.read())
 
-    matched_faces, _, _ = face_extraction.extract_faces_from_image(file, parameters)
+    matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(file, parameters)
     matched_faces == matched_faces
     for idx in range(len(matched_faces)):
         encoding = matched_faces[idx].encoding
@@ -110,7 +115,8 @@ def test_fullfile():
     enc = (json.dumps(matched_faces, cls=CustomEncoder))
 
     # # build a response dict to send back to client
-    response = {'success': True, 'message': 'image received and processed', 'xmp_data': enc } 
+    response = {'success': True, 'message': 'image received and processed', \
+                'xmp_data': enc, 'elapsed_time': elapsed_time } 
 
     # # encode response using jsonpickle
     response_pickled = jsonpickle.encode(response)

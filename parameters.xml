@@ -10,4 +10,8 @@
 		<port_image_handle>5000</port_image_handle>
 		<port_ip_disc>37020</port_ip_disc>
 	</server>
+	<timeout>
+		<connect_timeout>3</connect_timeout>
+		<read_timeout>120</read_timeout>
+	</timeout>
 </params>

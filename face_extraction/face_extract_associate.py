@@ -32,20 +32,24 @@ def extract_faces_from_image(image_path, parameters):
 
     success_faces, tagged_faces = face_extraction.Get_XMP_Faces(image_path)
 
-    ml_detected_faces = face_extraction.detect_pyramid(npImage, tiled_params)
+    ml_detected_faces, elapsed_time = face_extraction.detect_pyramid(npImage, tiled_params)
+
+    pristine_image = face_recognition.load_image_file(image_path)
 
     assert success_faces, 'Picasa face extraction failed.'
 
     matched_faces = associate_detections_and_tags(image_path, ml_detected_faces, tagged_faces, disp_photo=False, test=False)
 
-    return matched_faces, ml_detected_faces, tagged_faces
+    for idx in range(len(matched_faces)):
+        matched_faces[idx].add_square_face(pristine_image)
+
+    return matched_faces, ml_detected_faces, tagged_faces, elapsed_time
 
 def join_faces(pristine_image, tag_face, det_face=None):
     # This is used either to turn a tagged face into
     # a FaceRect, or to merge a detected and a 
     # tagged face. This must be called only on
     # faces that we are sure are correlated and overlapping.
-    # It 
     assert isinstance(tag_face, dict)
     assert 'bounding_rectangle' in tag_face.keys()
     assert 'Name' in tag_face.keys()
@@ -90,50 +94,17 @@ def join_faces(pristine_image, tag_face, det_face=None):
 
     # Assign the pixel image from the pristine image. 
     face_image = pristine_image[rect.top:rect.bottom, rect.left:rect.right]
-
-    im_h, im_w, _ = pristine_image.shape
-
-    # Get a square face image as well. 
-    square_size = np.max(( np.abs(rect.top - rect.bottom), np.abs(rect.level - rect.right) ))
-    if square_size > im_w:
-        square_size = im_w
-    if square_size > im_h:
-        square_size = im_h
-
-    half_size = square_size // 2
-
-    square_left = rect.x - half_size
-    square_right = rect.x + half_size
-    if square_left < 0:
-        square_left = 0
-        square_right = square_size
-    elif square_right > im_w:
-        square_right = im_w
-        square_left = square_right - square_size
-
-    square_top = rect.y - half_size
-    square_bot = rect.y + half_size
-    if square_top < 0:
-        square_top = 0
-        square_bot = square_size
-    elif square_bot > im_h:
-        square_bot = im_h
-        square_top = square_bot - square_size
-
-    square_img = pristine_image[square_top:square_bot, square_left:square_right]
-
-    sq_h, sq_w, ch = square_img.shape
-    assert ch == 3
-    assert sq_h == sq_w
-    print(f"Square image size is {square_img.shape}")
+ 
+    # print(f"Square image size is {square_img.shape}")
 
     # Create a FaceRect object from the rectangle, the 
     # extracted image, encoding, detection level, and
     # person name. Then return it.
     face = face_extraction.FaceRect(rect, face_image, detection_level, \
-        encoding=encoding, name=name, square_face = square_img)
+        encoding=encoding, name=name)
 
     return face
+
 
 def associate_detections_and_tags(image_path, detected_faces, tagged_faces, disp_photo=False, test=False):
     # Top-level function that takes a list of face_recognition
@@ -454,6 +425,7 @@ def _merge_detections_with_tags(detected_faces, tagged_faces, pristine_image):
             det.image = pristine_image[r.top:r.bottom, r.left:r.right]
             # Append to the matches and pop from the 
             # list of detected faces. 
+            # det = join_faces(pristine_image, det)
             matched_face_rects.append(det)
             detected_faces.pop(d_num)
 

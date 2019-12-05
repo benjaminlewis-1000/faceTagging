@@ -108,7 +108,7 @@ class FaceExtractTester(unittest.TestCase):
         for photo in self.photos_list[1:]:
             print(photo)
             photo, filename = self.__image_preprocess__(photo)
-            _, ml_faces, tagged_faces = face_extraction.extract_faces_from_image(photo, self.parameters)
+            _, ml_faces, tagged_faces, elapsed = face_extraction.extract_faces_from_image(photo, self.parameters)
             if len(ml_faces) > 0:
                 break
         # Assert that we at least are getting one image
@@ -129,7 +129,7 @@ class FaceExtractTester(unittest.TestCase):
             print(p, filename)
             out_file = re.sub('.(jpg|JPEG|JPG|jpeg)$', '.pkl', filename)
             if not os.path.isfile(out_file) or redo:
-                _, ml_faces, tagged_faces = face_extraction.extract_faces_from_image(photo, self.parameters)
+                _, ml_faces, tagged_faces, elapsed = face_extraction.extract_faces_from_image(photo, self.parameters)
                 assert ml_faces is not None
                 assert tagged_faces is not None
                 with open(out_file, 'wb') as fh:

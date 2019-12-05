@@ -17,9 +17,12 @@ import numpy as np
 import cv2
 import hashlib
 import face_extraction
-from .client_ip_discover import find_external_server
+import matplotlib.pyplot as plt
+from client_ip_discover import find_external_server
+import logging
 # from rectangle import Point, Rectangle
 
+logger = logging.getLogger(__name__)
 
 def decode_object(o):
  
@@ -80,53 +83,69 @@ def face_extract_client(filename):
         config = xmltodict.parse(p.read())
     port_image_handle = int(config['params']['server']['port_image_handle'])
     port_ip_disc = int(config['params']['server']['port_ip_disc'])
+    connect_timeout = int(config['params']['timeout']['connect_timeout'])
+    read_timeout = int(config['params']['timeout']['read_timeout'])
 
     process_local = True
     if not ext_ip:
+        logger.error('GPU server not available to extract faces from {}'.format(filename))
         process_local = True
     else:
         payload, headers = image_for_network(filename)
         addr = f'http://{ext_ip}:{port_image_handle}'
         alive_url = addr + '/api/alive'
         try:
-            response = requests.post(alive_url, data=payload, headers=headers)
+            response = requests.post(alive_url, data=payload, headers=headers, timeout=(connect_timeout, read_timeout))
             # decode response
             retval = json.loads(response.text)
             if response.status_code == 200:
-                process_local = False
+                process_local = not retval['server_supports_cuda'] 
 
         except requests.exceptions.ConnectionError:
             process_local = True
 
     if process_local:
-        matched_faces, _, _ = face_extraction.extract_faces_from_image(filename, config)
+        matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(filename, config)
     else:
         addr = f'http://{ext_ip}:{port_image_handle}'
         face_extract_url = addr + '/api/face_extract'
 
         # send http request with image and receive response
         try:
-            response = requests.post(face_extract_url, data=payload, headers=headers)
+            response = requests.post(face_extract_url, data=payload, headers=headers, timeout=(connect_timeout, read_timeout))
             # decode response
             retval = json.loads(response.text)
-
+            elapsed_time = retval['elapsed_time']
 
             if not retval['success']:
                 print("No success: ", retval['message'])
             else:
-                matched_faces = json.loads(retval['xmp_data'], object_hook = decode_object) 
+                matched_faces = json.loads(retval['xmp_data'], object_hook = decode_object)
+
+            logger.info('GPU server **was** used to extract faces from {}'.format(filename))
 
         except requests.exceptions.ConnectionError:
-            matched_faces, _, _ = face_extraction.extract_faces_from_image(filename, config)
+            logger.error('GPU server could not connect in face extraction.')
+            matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(filename, config)
+        except requests.exceptions.ReadTimeout:
+            logger.error('GPU server timed out when face extracting {}'.format(filename))
+            matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(filename, config)
 
+    logger.info('Elapsed time to extract faces from {} was {}'.format(filename, elapsed_time))
     return matched_faces
 
 if __name__ == "__main__":
     mf = face_extract_client('my_pic.jpg')
-    # print(mf)
+    logger.info(mf)
+
+    # for m in mf:
+    #     print(m.square_face.shape)
+    #     plt.imshow(m.square_face)
+    #     plt.show()
 
     test = False
     if test:
+
         with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
             config = xmltodict.parse(p.read())
         mf2, _, _ = face_extraction.extract_faces_from_image('my_pic.jpg', config)
