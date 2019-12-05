@@ -5,12 +5,13 @@ import numpy as np
 import hashlib
 
 class FaceRect:
-    def __init__(self, rectangle, face_image, detection_level, encoding = None, name=None):
+    def __init__(self, rectangle, face_image, detection_level, encoding = None, name=None, square_face = None):
         self.rectangle = rectangle
         self.encoding = encoding
         self.name = name
         self.image = face_image
         self.detection_level = detection_level
+        self.square_face = square_face
 
     def __eq__(self, otherFace):
         return self.rectangle == otherFace.rectangle

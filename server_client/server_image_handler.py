@@ -102,6 +102,8 @@ def test_fullfile():
         matched_faces[idx].encoding = encoding.tolist()
         image = matched_faces[idx].image
         matched_faces[idx].image = image.tolist()
+        square_face = matched_faces[idx].square_face
+        matched_faces[idx].square_face = square_face.tolist()
 
     matched_faces
 

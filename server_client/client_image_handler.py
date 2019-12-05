@@ -40,6 +40,7 @@ def decode_object(o):
         a.__dict__.update(o['__FaceRect__'])
         a.encoding = np.asarray(a.encoding)
         a.image = np.asarray(a.image)
+        a.square_face = np.asarray(a.square_face)
 
         return a
  

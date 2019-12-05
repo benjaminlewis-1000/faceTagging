@@ -91,10 +91,47 @@ def join_faces(pristine_image, tag_face, det_face=None):
     # Assign the pixel image from the pristine image. 
     face_image = pristine_image[rect.top:rect.bottom, rect.left:rect.right]
 
+    im_h, im_w, _ = pristine_image.shape
+
+    # Get a square face image as well. 
+    square_size = np.max(( np.abs(rect.top - rect.bottom), np.abs(rect.level - rect.right) ))
+    if square_size > im_w:
+        square_size = im_w
+    if square_size > im_h:
+        square_size = im_h
+
+    half_size = square_size // 2
+
+    square_left = rect.x - half_size
+    square_right = rect.x + half_size
+    if square_left < 0:
+        square_left = 0
+        square_right = square_size
+    elif square_right > im_w:
+        square_right = im_w
+        square_left = square_right - square_size
+
+    square_top = rect.y - half_size
+    square_bot = rect.y + half_size
+    if square_top < 0:
+        square_top = 0
+        square_bot = square_size
+    elif square_bot > im_h:
+        square_bot = im_h
+        square_top = square_bot - square_size
+
+    square_img = pristine_image[square_top:square_bot, square_left:square_right]
+
+    sq_h, sq_w, ch = square_img.shape
+    assert ch == 3
+    assert sq_h == sq_w
+    print(f"Square image size is {square_img.shape}")
+
     # Create a FaceRect object from the rectangle, the 
     # extracted image, encoding, detection level, and
     # person name. Then return it.
-    face = face_extraction.FaceRect(rect, face_image, detection_level, encoding, name)
+    face = face_extraction.FaceRect(rect, face_image, detection_level, \
+        encoding=encoding, name=name, square_face = square_img)
 
     return face
 
