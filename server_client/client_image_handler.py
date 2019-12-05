@@ -22,7 +22,7 @@ from client_ip_discover import find_external_server
 import logging
 # from rectangle import Point, Rectangle
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('my.logger')
 
 def decode_object(o):
  
@@ -122,7 +122,7 @@ def face_extract_client(filename):
             else:
                 matched_faces = json.loads(retval['xmp_data'], object_hook = decode_object)
 
-            logger.info('GPU server **was** used to extract faces from {}'.format(filename))
+            logger.debug('GPU server **was** used to extract faces from {}'.format(filename))
 
         except requests.exceptions.ConnectionError:
             logger.error('GPU server could not connect in face extraction.')
@@ -131,12 +131,12 @@ def face_extract_client(filename):
             logger.error('GPU server timed out when face extracting {}'.format(filename))
             matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(filename, config)
 
-    logger.info('Elapsed time to extract faces from {} was {}'.format(filename, elapsed_time))
+    logger.debug('Elapsed time to extract faces from {} was {}'.format(filename, elapsed_time))
     return matched_faces
 
 if __name__ == "__main__":
     mf = face_extract_client('my_pic.jpg')
-    logger.info(mf)
+    logger.debug(mf)
 
     # for m in mf:
     #     print(m.square_face.shape)
