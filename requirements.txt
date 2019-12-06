@@ -1,0 +1,6 @@
+dlib
+coloredlogs
+flask
+xmltodict
+scipy
+matplotlib

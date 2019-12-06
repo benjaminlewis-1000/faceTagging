@@ -4,18 +4,14 @@ import face_recognition
 import os
 import cv2
 import numpy as np
-import scipy.misc
 import itertools
 import face_extraction
-import coloredlogs
 import random
 import time
 import logging
 import io
 import xmltodict
 import matplotlib.pyplot as plt
-
-coloredlogs.install()
 
 
 def extract_faces_from_image(image_path, parameters):

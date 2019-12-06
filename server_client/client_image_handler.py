@@ -20,6 +20,9 @@ import face_extraction
 import matplotlib.pyplot as plt
 from client_ip_discover import find_external_server
 import logging
+import coloredlogs
+
+coloredlogs.install()
 # from rectangle import Point, Rectangle
 
 logger = logging.getLogger('my.logger')

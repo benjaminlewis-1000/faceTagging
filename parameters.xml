@@ -8,7 +8,7 @@
 	</tiled_detect_params>
 	<server>
 		<port_image_handle>5000</port_image_handle>
-		<port_ip_disc>37020</port_ip_disc>
+		<port_ip_disc>5001</port_ip_disc>
 	</server>
 	<timeout>
 		<connect_timeout>3</connect_timeout>
