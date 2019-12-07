@@ -23,7 +23,7 @@ def ip_responder():
 
     with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
         config = xmltodict.parse(p.read())
-    port_ip_disc = int(config['params']['server']['port_ip_disc'])
+    port_ip_disc = int(config['params']['ports']['server_port_ip_disc'])
 
     server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
     server.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)

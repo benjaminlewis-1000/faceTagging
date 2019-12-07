@@ -17,7 +17,7 @@ import io
 import base64
 import face_extraction
 import xmltodict
-from server_ip_discover import ip_responder
+from .server_ip_discover import ip_responder
 import hashlib
 from PIL import Image
 import face_recognition
@@ -40,7 +40,7 @@ class CustomEncoder(json.JSONEncoder):
         return {'__{}__'.format(o.__class__.__name__): o.__dict__}
 
 
-@app.route('/api/alive', methods=['POST'])
+@app.route('/api/alive', methods=['GET', 'POST'])
 def alive():
     r = request
 
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
         config = xmltodict.parse(p.read())
 
-    port = int(config['params']['server']['port_image_handle'])
+    port = int(config['params']['ports']['server_port_image_handle'])
 
     import threading
 

@@ -5,7 +5,7 @@ import os
 import sys
 
 PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-print(PARENT_DIR)
+# print(PARENT_DIR)
 sys.path.append(PARENT_DIR)
 
 # import flask
@@ -84,8 +84,8 @@ def face_extract_client(filename):
 
     with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
         config = xmltodict.parse(p.read())
-    port_image_handle = int(config['params']['server']['port_image_handle'])
-    port_ip_disc = int(config['params']['server']['port_ip_disc'])
+    port_image_handle = int(config['params']['ports']['server_port_image_handle'])
+    port_ip_disc = int(config['params']['ports']['server_port_ip_disc'])
     connect_timeout = int(config['params']['timeout']['connect_timeout'])
     read_timeout = int(config['params']['timeout']['read_timeout'])
 
@@ -97,17 +97,25 @@ def face_extract_client(filename):
         payload, headers = image_for_network(filename)
         addr = f'http://{ext_ip}:{port_image_handle}'
         alive_url = addr + '/api/alive'
+        print(alive_url)
         try:
-            response = requests.post(alive_url, data=payload, headers=headers, timeout=(connect_timeout, read_timeout))
+            response = requests.get(alive_url, data=payload, headers=headers, timeout=(connect_timeout, read_timeout))
             # decode response
+            print(response)
             retval = json.loads(response.text)
+            if not retval['server_supports_cuda']:
+                logger.error("Server does not support CUDA: processing locally.")
             if response.status_code == 200:
                 process_local = not retval['server_supports_cuda'] 
 
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.ConnectionError as ce:
+            print(ce)
+            logger.error("Connection error for API -- will process locally")
             process_local = True
 
+    # print("PL? ", process_local)
     if process_local:
+        exit()
         matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(filename, config)
     else:
         addr = f'http://{ext_ip}:{port_image_handle}'

@@ -4,3 +4,4 @@ flask
 xmltodict
 scipy
 matplotlib
+gunicorn

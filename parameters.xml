@@ -6,10 +6,11 @@
 		<height>600</height>
 		<width>300</width>
 	</tiled_detect_params>
-	<server>
-		<port_image_handle>5000</port_image_handle>
-		<port_ip_disc>5001</port_ip_disc>
-	</server>
+	<ports>
+		<server_port_image_handle>5000</server_port_image_handle>
+		<server_port_ip_disc>5001</server_port_ip_disc>
+		<client_return_port>44444</client_return_port>
+	</ports>
 	<timeout>
 		<connect_timeout>3</connect_timeout>
 		<read_timeout>120</read_timeout>
