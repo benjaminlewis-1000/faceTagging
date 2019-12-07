@@ -24,8 +24,18 @@ import coloredlogs
 
 coloredlogs.install()
 # from rectangle import Point, Rectangle
-
+# reload(logging)
+# logging.basicConfig(level=logging.DEBUG)
+# logging.debug('Helo!')
 logger = logging.getLogger('my.logger')
+logger.setLevel(logging.DEBUG)
+
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+logger.addHandler(ch)
+logger.debug("Hello!")
+# logger.basicConfig(level=logging.DEBUG)
+# logging.setLevel(logging.DEBUG)
 
 def decode_object(o):
  
@@ -97,11 +107,12 @@ def face_extract_client(filename):
         payload, headers = image_for_network(filename)
         addr = f'http://{ext_ip}:{port_image_handle}'
         alive_url = addr + '/api/alive'
-        print(alive_url)
+        logger.debug("Alive url is {}".format(alive_url))
         try:
-            response = requests.get(alive_url, data=payload, headers=headers, timeout=(connect_timeout, read_timeout))
+            # Since 'alive' expects no payload, it will throw 
+            # an error if it receives one. So this is proper.
+            response = requests.get(alive_url, timeout=(connect_timeout, read_timeout))
             # decode response
-            print(response)
             retval = json.loads(response.text)
             if not retval['server_supports_cuda']:
                 logger.error("Server does not support CUDA: processing locally.")
@@ -113,13 +124,13 @@ def face_extract_client(filename):
             logger.error("Connection error for API -- will process locally")
             process_local = True
 
-    # print("PL? ", process_local)
     if process_local:
-        exit()
+        logger.warning("Processing locally!")
         matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(filename, config)
     else:
         addr = f'http://{ext_ip}:{port_image_handle}'
         face_extract_url = addr + '/api/face_extract'
+        logger.debug("Using GPU, address is {}".format(face_extract_url))
 
         # send http request with image and receive response
         try:
