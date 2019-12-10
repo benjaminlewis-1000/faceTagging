@@ -43,3 +43,6 @@ def ip_responder():
         # Respond with our own information to the
         # IP and port that was sent to us.
         server.sendto(data_return, (return_ip, return_port))
+
+if __name__ == '__main__':
+    ip_responder()

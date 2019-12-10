@@ -22,7 +22,6 @@ from client_ip_discover import find_external_server
 import logging
 import coloredlogs
 
-coloredlogs.install()
 # from rectangle import Point, Rectangle
 # reload(logging)
 # logging.basicConfig(level=logging.DEBUG)
@@ -33,6 +32,7 @@ logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
+coloredlogs.install()
 logger.debug("Hello!")
 # logger.basicConfig(level=logging.DEBUG)
 # logging.setLevel(logging.DEBUG)
