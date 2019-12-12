@@ -5,8 +5,10 @@ import os
 import sys
 
 PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 # print(PARENT_DIR)
 sys.path.append(PARENT_DIR)
+sys.path.append(THIS_DIR)
 
 # import flask
 import xmltodict
@@ -136,7 +138,18 @@ def face_extract_client(filename):
         try:
             response = requests.post(face_extract_url, data=payload, headers=headers, timeout=(connect_timeout, read_timeout))
             # decode response
-            retval = json.loads(response.text)
+            try:
+                retval = json.loads(response.text)
+            except json.decoder.JSONDecodeError as jde:
+                if '500 Internal Server Error' in response.text:
+                    logger.critical("Your server face extract code is broken! It broke on filename {}".format(filename))
+                    raise IOError('Your server face extract code is broken. Fix it! It broke on filename {}'.format(filename))
+                else:
+                    print("Text response is : {}".format(response.text))
+                    print(jde)
+                    # raise(jde)
+                    return
+            # retval = json.loads(response.text)
             elapsed_time = retval['elapsed_time']
 
             if not retval['success']:
