@@ -8,20 +8,22 @@ print(PARENT_DIR)
 sys.path.append(PARENT_DIR)
 
 
-from flask import Flask, request, Response
-import jsonpickle
-import numpy as np
-import json
-import cv2
-import io
-import base64
-import face_extraction
-import xmltodict
 from .server_ip_discover import ip_responder
-import hashlib
+from flask import Flask, request, Response
 from PIL import Image
+import base64
+import cv2
+import face_extraction
 import face_recognition
+import hashlib
+import io
+import json
+import jsonpickle
+import logging
+import numpy as np
 import xmltodict
+import xmltodict
+
 
 # Initialize the Flask application
 app = Flask(__name__)
@@ -101,16 +103,27 @@ def test_fullfile():
         parameters = xmltodict.parse(fh.read())
 
     matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(file, parameters)
-    matched_faces == matched_faces
+
+    print(matched_faces)
     for idx in range(len(matched_faces)):
         encoding = matched_faces[idx].encoding
-        matched_faces[idx].encoding = encoding.tolist()
+        if encoding is not None:
+            matched_faces[idx].encoding = encoding.tolist()
         image = matched_faces[idx].image
-        matched_faces[idx].image = image.tolist()
+        if image is not None: # Shouldn't happen any other way...
+            matched_faces[idx].image = image.tolist()
+            logging.debug("Reg image OK")
+        else:
+            logging.error("Your face extractor returned no image. This shouldn't happen.")
+            return
+        
         square_face = matched_faces[idx].square_face
-        matched_faces[idx].square_face = square_face.tolist()
-
-    matched_faces
+        if square_face is not None:
+            logging.debug("Squre image OK")
+            matched_faces[idx].square_face = square_face.tolist()
+        else:
+            logging.error("Your face extractor returned no square image. This shouldn't happen.")
+            return
 
     enc = (json.dumps(matched_faces, cls=CustomEncoder))
 

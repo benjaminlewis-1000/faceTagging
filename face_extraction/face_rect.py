@@ -28,14 +28,38 @@ class FaceRect:
         return int(m.hexdigest(), 16)
 
     def __str__(self):
-        return "rectangle = {}, name = {}, encoding = {}...".\
-            format(self.rectangle, self.name, \
-                self.encoding[0:5])
+        if self.encoding is not None:
+            enc_fragment = "{}...".format(self.encoding[:5])
+        else:
+            enc_fragment = '<no encoding>'
+        if self.image is not None:
+            img_size = self.image.shape
+        else:
+            img_size = "N/A"
+
+        if self.square_face is not None:
+            sq_size = self.square_face.shape
+        else:
+            sq_size = "N/A"
+        return "rectangle = {}, name = {}, encoding = {}, img_size = {}, sq_img_size = {}".\
+            format(self.rectangle, self.name, enc_fragment, img_size, sq_size)
 
     def __repr__(self):
-        return "rectangle = {}, name = {}, encoding = {}...".\
-            format(self.rectangle, self.name, \
-                self.encoding[0:5])
+        if self.encoding is not None:
+            enc_fragment = "{}...".format(self.encoding[:5])
+        else:
+            enc_fragment = '<no encoding>'
+        if self.image is not None:
+            img_size = self.image.shape
+        else:
+            img_size = "N/A"
+
+        if self.square_face is not None:
+            sq_size = self.square_face.shape
+        else:
+            sq_size = "N/A"
+        return "rectangle = {}, name = {}, encoding = {}, img_size = {}, sq_img_size = {}".\
+            format(self.rectangle, self.name, enc_fragment, img_size, sq_size)
 
     def __assert_cmp_to_face__(self, face):
         assert isinstance(face, FaceRect), \

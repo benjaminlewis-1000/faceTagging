@@ -56,9 +56,16 @@ def decode_object(o):
     elif '__FaceRect__' in o:
         a = face_extraction.FaceRect(None, None, None, None)
         a.__dict__.update(o['__FaceRect__'])
-        a.encoding = np.asarray(a.encoding)
-        a.image = np.asarray(a.image)
-        a.square_face = np.asarray(a.square_face)
+        if a.encoding is not None:
+            a.encoding = np.asarray(a.encoding)
+        if a.image is not None:
+            a.image = np.asarray(a.image)
+        else:
+            logger.critical("Returned face did not have a regular image.")
+        if a.square_face is not None:
+            a.square_face = np.asarray(a.square_face)
+        else:
+            logger.critical("Returned face did not have a regular image.")
 
         return a
  
@@ -170,7 +177,8 @@ def face_extract_client(filename):
     return matched_faces
 
 if __name__ == "__main__":
-    mf = face_extract_client('my_pic.jpg')
+    # mf = face_extract_client('my_pic.jpg')
+    mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'))
     logger.debug(mf)
 
     # for m in mf:
