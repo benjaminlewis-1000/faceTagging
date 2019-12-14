@@ -1,22 +1,25 @@
 #! /usr/bin/env python
 
 # Face tagging test
-
 import os
-import face_recognition
+import sys
+
+# PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# print(PARENT_DIR)
+# sys.path.append(PARENT_DIR)
+
+from .rectangle import Rectangle
 from PIL import Image
 from time import sleep
-import cv2
-# import pyexiv2
-# from pyPicasaFaceXMP import picasaXMPFaceReader as pfr
-import re
 import binascii
+import collections
+import cv2
+import face_recognition
 import io
+import matplotlib.pyplot as plt
+import re
 import xml
 import xmltodict
-import collections
-from .rectangle import Rectangle
-import matplotlib.pyplot as plt
 
 # This function will extract the XMP Bag Tag from the header of 
 # a JPG file. This is where the now-defunct Picasa program, by 
@@ -146,6 +149,10 @@ def Get_XMP_Faces(file, test=False):
 
         cv2.rectangle(image, (left, top), (right, bottom), (255, 0, 0), 5)
 
+    if test:
+        plt.imshow(image)
+        plt.show()
+
  
     # if nothing is found, return None
     if len(bag_tags) == 0:
@@ -154,3 +161,5 @@ def Get_XMP_Faces(file, test=False):
     #  if we found something, return tag information
     return True, persons
 
+if __name__ == "__main__":
+    print(Get_XMP_Faces(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), True))

@@ -104,7 +104,6 @@ def test_fullfile():
 
     matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(file, parameters)
 
-    print(matched_faces)
     for idx in range(len(matched_faces)):
         encoding = matched_faces[idx].encoding
         if encoding is not None:
