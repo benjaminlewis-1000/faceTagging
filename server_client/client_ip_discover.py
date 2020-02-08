@@ -21,19 +21,20 @@ class server_finder():
         self.port_ip_disc = int(config['params']['ports']['server_port_ip_disc'])
         self.client_port = int(config['params']['ports']['client_return_port'])
 
-        for ip in socket.gethostbyname_ex(socket.gethostname())[2]:
-            if ip.startswith('127.'):
-                for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]:
-                    s.connect(('8.8.8.8', 53))
-                    self.my_ip = s.getsockname()[0]
-                    s.close()
-                    break
-            else:
-                self.my_ip = ip
+        self.get_my_ip()
 
+        print(self.my_ip)
         self.my_subnet = re.match('(\d+\.\d+\.\d+\.)\d+', self.my_ip).group(1)
 
         self.find_external_server()
+
+    def get_my_ip(self):
+        if 'IN_DOCKER' in os.environ.keys() and os.environ['IN_DOCKER']:
+            self.my_ip = os.environ['DOCKER_HOST_IP']
+        else:
+            ip_cmd = os.popen("ip route | grep default | awk '{print $9}'")
+            self.my_ip = ip_cmd.read().strip()
+            
 
     def find_external_server(self):
 

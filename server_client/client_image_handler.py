@@ -186,8 +186,10 @@ if __name__ == "__main__":
     # mf = face_extract_client('my_pic.jpg')
 
     client_ip = client_ip_discover.server_finder()
-    mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
-    mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
+    if 'IN_DOCKER' in os.environ.keys() and os.environ['IN_DOCKER']:
+        mf = face_extract_client(os.path.join('/test_imgs_filepopulate/', 'has_face_tags.jpg'), client_ip)
+    else:
+        mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
     logger.debug(mf)
 
     # for m in mf:
