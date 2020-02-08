@@ -2,54 +2,128 @@ import socket
 import json
 import xmltodict
 import os
-
+import re
+from time import sleep 
+import ipaddress
 
 # Source for getting my IP: https://stackoverflow.com/a/1267524/3158519
 # (Unrolled the single liner)
 
-def find_external_server():
+PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    for ip in socket.gethostbyname_ex(socket.gethostname())[2]:
-        if ip.startswith('127.'):
-            for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]:
-                s.connect(('8.8.8.8', 53))
-                my_ip = s.getsockname()[0]
-                s.close()
-                break
+class server_finder():
+    def __init__(self):
+
+        # self.server_ip = None
+        with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
+            config = xmltodict.parse(p.read())
+
+        self.port_ip_disc = int(config['params']['ports']['server_port_ip_disc'])
+        self.client_port = int(config['params']['ports']['client_return_port'])
+
+        for ip in socket.gethostbyname_ex(socket.gethostname())[2]:
+            if ip.startswith('127.'):
+                for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]:
+                    s.connect(('8.8.8.8', 53))
+                    self.my_ip = s.getsockname()[0]
+                    s.close()
+                    break
+            else:
+                self.my_ip = ip
+
+        self.my_subnet = re.match('(\d+\.\d+\.\d+\.)\d+', self.my_ip).group(1)
+
+        self.find_external_server()
+
+    def find_external_server(self):
+
+        print("Finding external GPU server...")
+
+        client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        client.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        # IP = socket.gethostbyname_ex(socket.gethostname())[2]
+        # Set a timeout so the socket does not block
+        # indefinitely when trying to receive data.
+
+        client.bind(("0.0.0.0", self.client_port)) # This is my port
+        message = bytes(self.my_ip.encode('utf-8'))
+        data = {'return_port': self.client_port, 'ip_addr': self.my_ip}
+        data_return = bytes(json.dumps(data).encode('utf-8'))
+
+        return_found = False
+
+        def find_ip(timeout, sleeptime):
+            # Get subnet of ip
+            print(f"Trying timeout value {timeout} with delay {sleeptime}.")
+            client.settimeout(timeout)
+            # client.setblocking(0)
+            # sleep(1)
+            # my_subnet = ipaddress.ip_network(my_ip + '/255.255.255.0', strict)
+            for i in range(255):
+                ip_test = f'{self.my_subnet}{i+1}'
+                # print(ip_test)
+                try:
+                    # Broadcast a message. 127.0.0.1 should be '<broadcast>'.
+                    tmp = client.sendto(data_return, (ip_test, self.port_ip_disc))
+                    # print(tmp)
+                    data, addr = client.recvfrom(1024)
+                    data = json.loads(data)
+                    return_port = int(data['return_port'])
+                    return_ip = data['ip_addr']
+                    return_found = True
+                    # print(data)
+                    return return_ip, return_port, return_found
+                except socket.timeout:
+                    pass
+
+                # Needs a small time to... do something, not sure. I imagine
+                # that it's flushing the queue from non-received data or something.
+                if i % 25 == 0 and i > 0:
+                    sleep(1000 * timeout)
+            return None, None, None
+        # return_ip, return_port, return_found = find_ip(0.0001, 0.1)
+        # Try with a slower timeout
+        for delay in [0.0001, 0.001, 0.005]:
+            if not return_found:
+                # print(delay)
+                return_ip, return_port, return_found = find_ip(delay, delay * 500)
+                # print(return_ip, return_found)
+        if return_found:
+            self.server_ip = return_ip
         else:
-            my_ip = ip
+            self.server_ip = None
 
-    PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    def check_ip(self):
 
-    client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    client.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    IP = socket.gethostbyname_ex(socket.gethostname())[2]
-    # Set a timeout so the socket does not block
-    # indefinitely when trying to receive data.
+        if self.server_ip is None:
+            return False
 
-    with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
-        config = xmltodict.parse(p.read())
-    port_ip_disc = int(config['params']['ports']['server_port_ip_disc'])
-    client_port = int(config['params']['ports']['client_return_port'])
+        client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 
-    client.settimeout(1)
-    client.bind(("0.0.0.0", client_port)) # This is my port
-    message = bytes(my_ip.encode('utf-8'))
-    data = {'return_port': client_port, 'ip_addr': my_ip}
-    data_return = bytes(json.dumps(data).encode('utf-8'))
+        client.bind(("0.0.0.0", self.client_port)) # This is my port
+        message = bytes(self.my_ip.encode('utf-8'))
+        data = {'return_port': self.client_port, 'ip_addr': self.my_ip}
+        data_return = bytes(json.dumps(data).encode('utf-8'))
 
+        return_found = False
 
-    try:
-        # Broadcast a message. 127.0.0.1 should be '<broadcast>'.
-        client.sendto(data_return, ('<broadcast>', port_ip_disc))
-        data, addr = client.recvfrom(1024)
-        data = json.loads(data)
-        return_port = int(data['return_port'])
-        return_ip = data['ip_addr']
-        # print(data)
-        return return_ip
-    except socket.timeout:
-        return None
+        try:
+            client.settimeout(1)
+            tmp = client.sendto(data_return, (self.server_ip, self.port_ip_disc))
+            data, addr = client.recvfrom(1024)
+            data = json.loads(data)
+            return_port = int(data['return_port'])
+            return_ip = data['ip_addr']
+            return_found = True
+        except socket.timeout:
+            return_found = False
+
+        return return_found
 
 if __name__ == "__main__":
-    print(find_external_server())
+    s = server_finder()
+    print("Found: ", s.server_ip)
+    print("Still there: ", s.check_ip())
+    print("Still there: ", s.check_ip())
+    print("Still there: ", s.check_ip())
+    print("Still there: ", s.check_ip())

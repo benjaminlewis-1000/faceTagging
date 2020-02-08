@@ -20,7 +20,7 @@ import cv2
 import hashlib
 import face_extraction
 import matplotlib.pyplot as plt
-from client_ip_discover import find_external_server
+import client_ip_discover # import find_external_server
 import logging
 import coloredlogs
 
@@ -98,8 +98,14 @@ def image_for_network(filename):
 
     return payload, headers
 
-def face_extract_client(filename):
-    ext_ip = find_external_server()
+def face_extract_client(filename, server_ip_finder):
+
+    server_there = server_ip_finder.check_ip()
+    if server_there:
+        ext_ip = server_ip_finder.server_ip
+    else:
+        server_ip_finder.find_external_server()
+        ext_ip = None
 
     with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
         config = xmltodict.parse(p.read())
@@ -178,7 +184,10 @@ def face_extract_client(filename):
 
 if __name__ == "__main__":
     # mf = face_extract_client('my_pic.jpg')
-    mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'))
+
+    client_ip = client_ip_discover.server_finder()
+    mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
+    mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
     logger.debug(mf)
 
     # for m in mf:

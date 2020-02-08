@@ -44,6 +44,7 @@ class CustomEncoder(json.JSONEncoder):
 
 @app.route('/api/alive', methods=['GET', 'POST'])
 def alive():
+    print("hi")
     r = request
 
     # build a response dict to send back to client
@@ -137,6 +138,7 @@ def test_fullfile():
 
 
 if __name__ == "__main__":
+    print("Main")
     # start flask app
     with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
         config = xmltodict.parse(p.read())
@@ -147,6 +149,7 @@ if __name__ == "__main__":
 
     ip_thread = threading.Thread(target = ip_responder)
     ip_thread.start()
+    print(ip_thread)
     # Do NOT join the thread -- it will cause the while True
     # to block.
 
