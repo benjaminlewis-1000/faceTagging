@@ -3,6 +3,10 @@ import json
 import os
 import xmltodict
 
+# Need to put this in /etc/rc.local as the following: 
+# runuser -l <YOUR_USER> -c "/usr/bin/python3 <PATH_TO_THIS_FILE>/server_ip_discover.py " &
+# runuser lets the sudo user use the non-root python libraries.
+
 # Source for getting my IP: https://stackoverflow.com/a/1267524/3158519
 # (Unrolled the single liner)
 

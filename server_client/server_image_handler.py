@@ -3,6 +3,9 @@
 import os
 import sys
 
+# Put this file in crontab -e with the line:
+# @reboot (<PATH_TO_GUNICORN>/gunicorn -b 0.0.0.0:5000 -w 1 --chdir <PATH_TO_THIS_GIT_REPO> server_client.server_image_handler:app ) &
+
 PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print(PARENT_DIR)
 sys.path.append(PARENT_DIR)
