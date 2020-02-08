@@ -23,7 +23,7 @@ class server_finder():
 
         self.get_my_ip()
 
-        print(self.my_ip)
+        print("My ip is ", self.my_ip)
         self.my_subnet = re.match('(\d+\.\d+\.\d+\.)\d+', self.my_ip).group(1)
 
         self.find_external_server()
@@ -34,7 +34,12 @@ class server_finder():
         else:
             ip_cmd = os.popen("ip route | grep default | awk '{print $9}'")
             self.my_ip = ip_cmd.read().strip()
-            
+            if not re.match('\d+\.\d+\.\d+\.\d+', self.my_ip):
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                s.connect(("8.8.8.8", 80))
+                self.my_ip = s.getsockname()[0]
+                s.close()
+                            
 
     def find_external_server(self):
 
