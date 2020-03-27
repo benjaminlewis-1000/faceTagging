@@ -3,8 +3,47 @@
 import os
 import sys
 
-# Put this file in crontab -e with the line:
+# Put this file in crontab -e with the line (for initial system startup)
 # @reboot (<PATH_TO_GUNICORN>/gunicorn -b 0.0.0.0:5000 -w 1 --chdir <PATH_TO_THIS_GIT_REPO> server_client.server_image_handler:app ) &
+
+### Put the following script in your /lib/systemd/system-sleep directory, with modifications to get the right directory. 
+'''
+# **** This script is used to kill the service on sleep. However, there are issues
+# **** with re-starting it in sudo space (I think due to GPU), so we have to do something
+# **** else on restart
+case $1/$2 in
+  pre/*)
+    echo "Going to $2..."
+    killall libinput-debug-events
+    for procID in ` ps aux | grep server_image_handler | grep -v 'grep' | awk '{print $2}'`; do
+        kill $procID
+    done
+    sleep .2
+    ;;
+  post/*)
+    echo "Waking up from $2..."
+    # Place your post suspend (resume) commands here, or `exit 0` if no post suspend action required
+    ;;
+esac
+
+### Put the following script in /etc/systemd/system/facerec.service, again modifying paths as needed:
+### (Source : https://unix.stackexchange.com/questions/152039/how-to-run-a-user-script-after-systemd-wakeup 
+### ==> https://unix.stackexchange.com/a/492497 for specific answer)
+
+[Unit]
+Description=Run face_recognition
+After=suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target
+
+[Service]
+ExecStart=/home/benjamin/.local/bin/gunicorn -b 0.0.0.0:5000 -w 1 --chdir /home/benjamin/gitRepos/faceTagging server_client.server_image_handler:app
+User=benjamin
+
+[Install]
+WantedBy=suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target
+
+### Then, enable it in the system by using ``sudo systemctl enable facerec``.
+
+'''
 
 PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print(PARENT_DIR)
