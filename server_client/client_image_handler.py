@@ -156,7 +156,7 @@ def face_extract_client(filename, server_ip_finder):
             except json.decoder.JSONDecodeError as jde:
                 if '500 Internal Server Error' in response.text:
                     logger.critical("Your server face extract code is broken! It broke on filename {}".format(filename))
-                    raise IOError('Your server face extract code is broken. Fix it! It broke on filename {}'.format(filename))
+                    raise IOError(f'Your server face extract code is broken. Fix it! It broke on filename {filename}. \nError text: {response.text}')
                 else:
                     print("Text response is : {}".format(response.text))
                     print(jde)
@@ -189,7 +189,8 @@ if __name__ == "__main__":
     if 'IN_DOCKER' in os.environ.keys() and os.environ['IN_DOCKER']:
         mf = face_extract_client(os.path.join('/test_imgs_filepopulate/', 'has_face_tags.jpg'), client_ip)
     else:
-        mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
+        # mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
+        mf = face_extract_client('/home/benjamin/DSC_1209.JPG', client_ip)
     logger.debug(mf)
 
     # for m in mf:
@@ -197,21 +198,21 @@ if __name__ == "__main__":
     #     plt.imshow(m.square_face)
     #     plt.show()
 
-    test = False
-    if test:
+    # test = False
+    # if test:
 
-        with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
-            config = xmltodict.parse(p.read())
-        mf2, _, _ = face_extraction.extract_faces_from_image('my_pic.jpg', config)
+    #     with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
+    #         config = xmltodict.parse(p.read())
+    #     mf2, _, _ = face_extraction.extract_faces_from_image('my_pic.jpg', config)
 
-        for f in range(len(mf)):
-            f1 = mf[f]
-            f2 = mf[f]
-            # print(f1)
-            assert np.mean(f1.encoding - f2.encoding) == 0
-            assert f1.name == f2.name
-            assert f1.rectangle == f2.rectangle
-        print("Test done!")
+    #     for f in range(len(mf)):
+    #         f1 = mf[f]
+    #         f2 = mf[f]
+    #         # print(f1)
+    #         assert np.mean(f1.encoding - f2.encoding) == 0
+    #         assert f1.name == f2.name
+    #         assert f1.rectangle == f2.rectangle
+    #     print("Test done!")
 
 
 

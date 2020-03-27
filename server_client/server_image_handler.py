@@ -86,7 +86,6 @@ class CustomEncoder(json.JSONEncoder):
 
 @app.route('/api/alive', methods=['GET', 'POST'])
 def alive():
-    print("hi")
     r = request
 
     # build a response dict to send back to client
@@ -145,6 +144,7 @@ def test_fullfile():
     with open(parameter_file, 'r') as fh:
         parameters = xmltodict.parse(fh.read())
 
+    print("extracting")
     matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(file, parameters)
 
     for idx in range(len(matched_faces)):
