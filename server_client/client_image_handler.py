@@ -197,12 +197,9 @@ def face_extract_client(filename, server_ip_finder):
         for face_num in range(len(matched_faces)):
             matched_faces[face_num].reconstruct_square_face(filename)
             matched_faces[face_num].reconstruct_nonrect_face(filename)
-            # plt.imshow(matched_faces[face_num].square_face)
-            # print(matched_faces[face_num].square_face.shape)
-            # plt.show()
-            # plt.imshow(matched_faces[face_num].face_image_nonrect)
-            # print(matched_faces[face_num].face_image_nonrect.shape)
-            # plt.show()
+
+            if not orientation in exif.keys():
+                continue
 
             mfi = matched_faces[face_num].square_face
             rect = matched_faces[face_num].rectangle
@@ -259,11 +256,12 @@ if __name__ == "__main__":
     else:
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/DSC_4551.JPG'
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1245.JPG'
+        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-16 13.01.55.jpg'
 
         # mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
         # mf = face_extract_client('/home/benjamin/Desktop/DSC_1209.JPG', client_ip)
         mf = face_extract_client(file, client_ip)
-        import matplotlib.pyplot as plt
+        
         # plt.imshow(mf[0].square_face)
         # plt.show()
         # plt.imshow(mf[1].square_face)
@@ -272,8 +270,9 @@ if __name__ == "__main__":
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         for i in range(len(mf)):
             r = mf[i].rectangle
-            print(r.top, r.left, r.bottom, r.right)
             cv2.rectangle(img, (r.left, r.top), (r.right, r.bottom), (255, 255, 130), 18)
+            # plt.imshow(mf[i].square_face)
+            # plt.show()
         plt.imshow(img)
         plt.show()
     logger.debug(mf)

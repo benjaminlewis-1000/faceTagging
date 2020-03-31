@@ -23,7 +23,7 @@ class server_finder():
 
         self.get_my_ip()
 
-        print("My ip is ", self.my_ip)
+        print(f"My ip is {self.my_ip}")
         self.my_subnet = re.match('(\d+\.\d+\.\d+\.)\d+', self.my_ip).group(1)
 
         self.find_external_server()

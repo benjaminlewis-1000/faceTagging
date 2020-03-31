@@ -26,6 +26,9 @@ class FaceRect:
 
         exif=dict(image._getexif().items())
 
+        if not orientation in exif.keys():
+            return image_chip            
+
         if exif[orientation] == 3:
             # Rotate 180
             image_chip=np.rot90(image_chip, 2) # image.rotate(180, expand=True)
