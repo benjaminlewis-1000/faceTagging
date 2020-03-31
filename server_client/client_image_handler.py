@@ -262,6 +262,7 @@ if __name__ == "__main__":
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-16 13.01.55.jpg'
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Nathaniel Fun/DSC_2715.JPG'
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.31.26.jpg'
+        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1224.JPG'
 
         # mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
         # mf = face_extract_client('/home/benjamin/Desktop/DSC_1209.JPG', client_ip)

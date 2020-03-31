@@ -261,7 +261,7 @@ class FaceRect:
 
         sq_h, sq_w, ch = square_img.shape
         assert ch == 3
-        assert sq_h == sq_w
+        assert np.abs(sq_h - sq_w) <= 1
         assert sq_h > 0
 
         self.square_face = square_img
