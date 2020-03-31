@@ -3,15 +3,56 @@
 from .rectangle import Rectangle
 import numpy as np
 import hashlib
+import face_recognition
+from PIL import Image, ExifTags
 
 class FaceRect:
     def __init__(self, rectangle, face_image, detection_level, encoding = None, name=None, square_face = None):
         self.rectangle = rectangle
         self.encoding = encoding
         self.name = name
-        self.image = face_image
+        self.face_image_nonrect = face_image
         self.detection_level = detection_level
         self.square_face = square_face
+
+        self.square_top = None
+
+    def __rotate_chip__(self, file_path, image_chip):
+
+        image = Image.open(file_path)
+        for orientation in ExifTags.TAGS.keys():
+            if ExifTags.TAGS[orientation]=='Orientation':
+                break
+
+        exif=dict(image._getexif().items())
+
+        if exif[orientation] == 3:
+            # Rotate 180
+            image_chip=np.rot90(image_chip, 2) # image.rotate(180, expand=True)
+        elif exif[orientation] == 6:
+            # Rotate right
+            image_chip=np.rot90(image_chip, 3) # image.rotate(270, expand=True)
+        elif exif[orientation] == 8:
+            # Rotate left
+            image_chip=np.rot90(image_chip, 1) # image.rotate(90, expand=True)
+
+        return image_chip
+
+    def reconstruct_square_face(self, pristine_img_path):
+        if self.square_top is None:
+            return
+        pristine_img = face_recognition.load_image_file(pristine_img_path)
+        square_img = pristine_img[self.square_top:self.square_bot, self.square_left:self.square_right]
+
+        self.square_face = self.__rotate_chip__(pristine_img_path, square_img)
+
+
+    def reconstruct_nonrect_face(self, pristine_img_path):
+        pristine_img = face_recognition.load_image_file(pristine_img_path)
+        r = self.rectangle
+        self.face_image_nonrect = pristine_img[r.top:r.bottom, r.left:r.right]
+
+        self.face_image_nonrect = self.__rotate_chip__(pristine_img_path, self.face_image_nonrect)
 
     def __eq__(self, otherFace):
         return self.rectangle == otherFace.rectangle
@@ -32,8 +73,8 @@ class FaceRect:
             enc_fragment = "{}...".format(self.encoding[:5])
         else:
             enc_fragment = '<no encoding>'
-        if self.image is not None:
-            img_size = self.image.shape
+        if self.face_image_nonrect is not None:
+            img_size = self.face_image_nonrect.shape
         else:
             img_size = "N/A"
 
@@ -49,8 +90,8 @@ class FaceRect:
             enc_fragment = "{}...".format(self.encoding[:5])
         else:
             enc_fragment = '<no encoding>'
-        if self.image is not None:
-            img_size = self.image.shape
+        if self.face_image_nonrect is not None:
+            img_size = self.face_image_nonrect.shape
         else:
             img_size = "N/A"
 
@@ -205,12 +246,12 @@ class FaceRect:
             square_bot = im_h
             square_top = square_bot - square_size
 
-        square_top = int(square_top)
-        square_bot = int(square_bot)
-        square_left = int(square_left)
-        square_right = int(square_right)
+        self.square_top = int(square_top)
+        self.square_bot = int(square_bot)
+        self.square_left = int(square_left)
+        self.square_right = int(square_right)
 
-        square_img = pristine_img[square_top:square_bot, square_left:square_right]
+        square_img = pristine_img[self.square_top:self.square_bot, self.square_left:self.square_right]
 
         sq_h, sq_w, ch = square_img.shape
         assert ch == 3

@@ -59,14 +59,14 @@ def decode_object(o):
         a.__dict__.update(o['__FaceRect__'])
         if a.encoding is not None:
             a.encoding = np.asarray(a.encoding)
-        if a.image is not None:
-            a.image = np.asarray(a.image)
-        else:
-            logger.critical("Returned face did not have a regular image.")
-        if a.square_face is not None:
-            a.square_face = np.asarray(a.square_face)
-        else:
-            logger.critical("Returned face did not have a regular image.")
+        # if a.image is not None:
+        #     a.image = np.asarray(a.image)
+        # else:
+        #     logger.critical("Returned face did not have a regular image.")
+        # if a.square_face is not None:
+        #     a.square_face = np.asarray(a.square_face)
+        # else:
+        #     logger.critical("Returned face did not have a regular image.")
 
         return a
  
@@ -185,6 +185,8 @@ def face_extract_client(filename, server_ip_finder):
     logger.debug('Elapsed time to extract faces from {} was {}'.format(filename, elapsed_time))
 
     if len(matched_faces) > 0: 
+
+
         image = Image.open(filename)
         for orientation in ExifTags.TAGS.keys():
             if ExifTags.TAGS[orientation]=='Orientation':
@@ -193,6 +195,15 @@ def face_extract_client(filename, server_ip_finder):
         exif=dict(image._getexif().items())
 
         for face_num in range(len(matched_faces)):
+            matched_faces[face_num].reconstruct_square_face(filename)
+            matched_faces[face_num].reconstruct_nonrect_face(filename)
+            # plt.imshow(matched_faces[face_num].square_face)
+            # print(matched_faces[face_num].square_face.shape)
+            # plt.show()
+            # plt.imshow(matched_faces[face_num].face_image_nonrect)
+            # print(matched_faces[face_num].face_image_nonrect.shape)
+            # plt.show()
+
             mfi = matched_faces[face_num].square_face
             rect = matched_faces[face_num].rectangle
             top_i = rect.top
@@ -246,14 +257,19 @@ if __name__ == "__main__":
     if 'IN_DOCKER' in os.environ.keys() and os.environ['IN_DOCKER']:
         mf = face_extract_client(os.path.join('/test_imgs_filepopulate/', 'has_face_tags.jpg'), client_ip)
     else:
+        file = '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/DSC_4551.JPG'
+        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1245.JPG'
+
         # mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
-        mf = face_extract_client('/home/benjamin/Desktop/DSC_1209.JPG', client_ip)
+        # mf = face_extract_client('/home/benjamin/Desktop/DSC_1209.JPG', client_ip)
+        mf = face_extract_client(file, client_ip)
         import matplotlib.pyplot as plt
         # plt.imshow(mf[0].square_face)
         # plt.show()
         # plt.imshow(mf[1].square_face)
         # plt.show()
-        img = cv2.imread('/home/benjamin/Desktop/DSC_1209.JPG')
+        img = cv2.imread(file)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         for i in range(len(mf)):
             r = mf[i].rectangle
             print(r.top, r.left, r.bottom, r.right)
@@ -262,7 +278,10 @@ if __name__ == "__main__":
         plt.show()
     logger.debug(mf)
 
-    # out = {'8': '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/DSC_4551.JPG', '6': '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/20200225_170413.jpg', '3': '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/2020-02-21 20.52.00.jpg'}
+    # out = {'8': '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/DSC_4551.JPG', \
+    #        '6': '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/20200225_170413.jpg', \
+    #        '3': '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/2020-02-21 20.52.00.jpg'}
+
     # for key in ['3', '6', '8']:
     #     m3 = face_extract_client(out[key], client_ip)
     #     img = cv2.imread(out[key])

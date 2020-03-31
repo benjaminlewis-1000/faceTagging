@@ -198,8 +198,8 @@ def associate_detections_and_tags(image_path, detected_faces, tagged_faces, disp
     for df in fully_matched:
         r = df.rectangle
         cut_rectangle = pristine_image[r.top:r.bottom, r.left:r.right]
-        assert(df.image.shape == cut_rectangle.shape)
-        df.image = cut_rectangle
+        assert(df.face_image_nonrect.shape == cut_rectangle.shape)
+        df.face_image_nonrect = cut_rectangle
     
     return fully_matched
 
@@ -418,7 +418,7 @@ def _merge_detections_with_tags(detected_faces, tagged_faces, pristine_image):
             # tight around facial features. 
             det.rectangle.expand()
             r = det.rectangle
-            det.image = pristine_image[r.top:r.bottom, r.left:r.right]
+            det.face_image_nonrect = pristine_image[r.top:r.bottom, r.left:r.right]
             # Append to the matches and pop from the 
             # list of detected faces. 
             # det = join_faces(pristine_image, det)
