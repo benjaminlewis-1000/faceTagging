@@ -25,6 +25,7 @@ def ip_responder():
             my_ip = ip
 
 
+    print("My IP is ", my_ip)
     with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
         config = xmltodict.parse(p.read())
     port_ip_disc = int(config['params']['ports']['server_port_ip_disc'])
@@ -32,9 +33,11 @@ def ip_responder():
     server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
     server.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     server.bind(("0.0.0.0", port_ip_disc))
+    print(port_ip_disc)
 
     data = {'return_port': port_ip_disc, 'ip_addr': my_ip}
     data_return = bytes(json.dumps(data).encode('utf-8'))
+    print(data_return)
 
     while True:
         # Sit and wait forever for a message. 
@@ -46,7 +49,7 @@ def ip_responder():
         print("received message: %s"%data)
         # Respond with our own information to the
         # IP and port that was sent to us.
-        print(return_ip, return_port)
+        print("Returning to: ", return_ip, return_port)
         server.sendto(data_return, (return_ip, return_port))
 
 if __name__ == '__main__':

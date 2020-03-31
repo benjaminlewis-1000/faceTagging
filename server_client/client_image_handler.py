@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 import client_ip_discover # import find_external_server
 import logging
 import coloredlogs
+from PIL import Image, ExifTags
 
 # from rectangle import Point, Rectangle
 # reload(logging)
@@ -114,6 +115,8 @@ def face_extract_client(filename, server_ip_finder):
     connect_timeout = int(config['params']['timeout']['connect_timeout'])
     read_timeout = int(config['params']['timeout']['read_timeout'])
 
+    # Get orientation data
+
     process_local = True
     if not ext_ip:
         logger.error('GPU server not available to extract faces from {}'.format(filename))
@@ -158,7 +161,7 @@ def face_extract_client(filename, server_ip_finder):
                     logger.critical("Your server face extract code is broken! It broke on filename {}".format(filename))
                     raise IOError(f'Your server face extract code is broken. Fix it! It broke on filename {filename}. \nError text: {response.text}')
                 else:
-                    print("Text response is : {}".format(response.text))
+                    print(f"File is: {filename}. Text response is : {response.text[:300]}")
                     print(jde)
                     # raise(jde)
                     return
@@ -180,6 +183,60 @@ def face_extract_client(filename, server_ip_finder):
             matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(filename, config)
 
     logger.debug('Elapsed time to extract faces from {} was {}'.format(filename, elapsed_time))
+
+    if len(matched_faces) > 0: 
+        image = Image.open(filename)
+        for orientation in ExifTags.TAGS.keys():
+            if ExifTags.TAGS[orientation]=='Orientation':
+                break
+
+        exif=dict(image._getexif().items())
+
+        for face_num in range(len(matched_faces)):
+            mfi = matched_faces[face_num].square_face
+            rect = matched_faces[face_num].rectangle
+            top_i = rect.top
+            left_i = rect.left
+            r_height = rect.height
+            r_width = rect.width
+            im_height = image.height
+            im_width = image.width
+            imm = cv2.imread(filename)
+
+            if exif[orientation] == 3:
+                # Rotate 180
+                matched_faces[face_num].square_face=np.rot90(mfi, 2) # image.rotate(180, expand=True)
+                top = im_height - top_i - 1 - r_height
+                left = im_width - left_i - 1 - r_width
+            elif exif[orientation] == 6:
+                # Rotate right
+                matched_faces[face_num].square_face=np.rot90(mfi, 3) # image.rotate(270, expand=True)
+
+                left = im_height - top_i - r_height
+                top = left_i
+                # right = top
+                # top = left
+                # left = right - r_width
+                # left = im_height - left - 1
+                # top = im_width - top - 1
+                wid = r_width
+                r_width = r_height
+                r_height = wid
+            elif exif[orientation] == 8:
+                # Rotate left
+                matched_faces[face_num].square_face=np.rot90(mfi, 1) # image.rotate(90, expand=True)
+                top = im_width - left_i - r_width
+                left = top_i
+                wid = r_width
+                r_width = r_height
+                r_height = wid
+            else:
+                top = top_i
+                left = left_i
+                
+            matched_faces[face_num].rectangle = face_extraction.rectangle.Rectangle(height=int(r_height), \
+                width=int(r_width), topEdge=int(top), leftEdge=int(left))
+
     return matched_faces
 
 if __name__ == "__main__":
@@ -190,8 +247,33 @@ if __name__ == "__main__":
         mf = face_extract_client(os.path.join('/test_imgs_filepopulate/', 'has_face_tags.jpg'), client_ip)
     else:
         # mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
-        mf = face_extract_client('/home/benjamin/DSC_1209.JPG', client_ip)
+        mf = face_extract_client('/home/benjamin/Desktop/DSC_1209.JPG', client_ip)
+        import matplotlib.pyplot as plt
+        # plt.imshow(mf[0].square_face)
+        # plt.show()
+        # plt.imshow(mf[1].square_face)
+        # plt.show()
+        img = cv2.imread('/home/benjamin/Desktop/DSC_1209.JPG')
+        for i in range(len(mf)):
+            r = mf[i].rectangle
+            print(r.top, r.left, r.bottom, r.right)
+            cv2.rectangle(img, (r.left, r.top), (r.right, r.bottom), (255, 255, 130), 18)
+        plt.imshow(img)
+        plt.show()
     logger.debug(mf)
+
+    # out = {'8': '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/DSC_4551.JPG', '6': '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/20200225_170413.jpg', '3': '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/2020-02-21 20.52.00.jpg'}
+    # for key in ['3', '6', '8']:
+    #     m3 = face_extract_client(out[key], client_ip)
+    #     img = cv2.imread(out[key])
+    #     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    #     logger.debug(m3)
+    #     for i in range(len(m3)):
+    #         r = m3[i].rectangle
+    #         print(r.top, r.left, r.bottom, r.right)
+    #         cv2.rectangle(img, (r.left, r.top), (r.right, r.bottom), (255, 255, 130), 18)
+    #     plt.imshow(img)
+    #     plt.show()
 
     # for m in mf:
     #     print(m.square_face.shape)

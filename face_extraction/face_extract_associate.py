@@ -12,7 +12,7 @@ import logging
 import io
 import xmltodict
 import matplotlib.pyplot as plt
-
+from PIL import Image, ExifTags
 
 def extract_faces_from_image(image_path, parameters):
     assert isinstance(image_path, str) or isinstance(image_path, io.BytesIO)
