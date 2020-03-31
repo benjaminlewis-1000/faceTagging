@@ -454,7 +454,7 @@ def _merge_detections_with_tags(detected_faces, tagged_faces, pristine_image):
             # no longer in the list of tagged 
             # faces.
             for tag in tagged_faces:
-                assert tag_rect.rectangle.IOU(tag['bounding_rectangle']) != 0
+                assert tag_rect.rectangle.IOU(tag['bounding_rectangle']) < 1
 
     # Assertions for case 2:
     # - Turned into a FaceRect
