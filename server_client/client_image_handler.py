@@ -145,7 +145,10 @@ def face_extract_client(filename, server_ip_finder):
 
     if process_local:
         logger.warning("Processing locally!")
-        matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(filename, config)
+        if not dlib.DLIB_USE_CUDA:
+            raise IOError("No GPU available")
+        else:
+            matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(filename, config)
     else:
         addr = f'http://{ext_ip}:{port_image_handle}'
         face_extract_url = addr + '/api/face_extract'
