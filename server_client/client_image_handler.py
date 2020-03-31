@@ -216,12 +216,12 @@ def face_extract_client(filename, server_ip_finder):
 
             if exif[orientation] == 3:
                 # Rotate 180
-                matched_faces[face_num].square_face=np.rot90(mfi, 2) # image.rotate(180, expand=True)
+                # matched_faces[face_num].square_face=np.rot90(mfi, 2) # image.rotate(180, expand=True)
                 top = im_height - top_i - 1 - r_height
                 left = im_width - left_i - 1 - r_width
             elif exif[orientation] == 6:
                 # Rotate right
-                matched_faces[face_num].square_face=np.rot90(mfi, 3) # image.rotate(270, expand=True)
+                # matched_faces[face_num].square_face=np.rot90(mfi, 3) # image.rotate(270, expand=True)
 
                 left = im_height - top_i - r_height
                 top = left_i
@@ -235,7 +235,7 @@ def face_extract_client(filename, server_ip_finder):
                 r_height = wid
             elif exif[orientation] == 8:
                 # Rotate left
-                matched_faces[face_num].square_face=np.rot90(mfi, 1) # image.rotate(90, expand=True)
+                # matched_faces[face_num].square_face=np.rot90(mfi, 1) # image.rotate(90, expand=True)
                 top = im_width - left_i - r_width
                 left = top_i
                 wid = r_width
