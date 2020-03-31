@@ -3,6 +3,7 @@
 
 import os
 import sys
+import dlib
 
 PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -175,12 +176,18 @@ def face_extract_client(filename, server_ip_finder):
 
             logger.debug('GPU server **was** used to extract faces from {}'.format(filename))
 
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.ConnectionError as ce:
             logger.error('GPU server could not connect in face extraction.')
-            matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(filename, config)
-        except requests.exceptions.ReadTimeout:
+            if not dlib.DLIB_USE_CUDA:
+                raise ce
+            else:
+                matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(filename, config)
+        except requests.exceptions.ReadTimeout as ce:
             logger.error('GPU server timed out when face extracting {}'.format(filename))
-            matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(filename, config)
+            if not dlib.DLIB_USE_CUDA:
+                raise ce
+            else:
+                matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(filename, config)
 
     logger.debug('Elapsed time to extract faces from {} was {}'.format(filename, elapsed_time))
 
@@ -263,6 +270,7 @@ if __name__ == "__main__":
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Nathaniel Fun/DSC_2715.JPG'
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.31.26.jpg'
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1224.JPG'
+        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1174.JPG'
 
         # mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
         # mf = face_extract_client('/home/benjamin/Desktop/DSC_1209.JPG', client_ip)
