@@ -146,14 +146,12 @@ def test_fullfile():
 
     print("extracting")
     matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(file, parameters)
-    print('Extraction done!')
 
     for idx in range(len(matched_faces)):
         encoding = matched_faces[idx].encoding
         if encoding is not None:
             matched_faces[idx].encoding = encoding.tolist()
         mm = matched_faces[idx]
-        print(mm.square_bot, mm.square_top, mm.square_left, mm.square_right)
         # image = matched_faces[idx].face_image_nonrect
         # if image is not None: # Shouldn't happen any other way...
         #     matched_faces[idx].image = image.tolist()
@@ -162,7 +160,6 @@ def test_fullfile():
         #     logging.error("Your face extractor returned no image. This shouldn't happen.")
         #     return
         matched_faces[idx].face_image_nonrect = None
-        print('img list')
         
         # square_face = matched_faces[idx].square_face
         # if square_face is not None:
@@ -172,11 +169,8 @@ def test_fullfile():
         #     logging.error("Your face extractor returned no square image. This shouldn't happen.")
         #     return
         matched_faces[idx].square_face = None
-        print('sq face')
 
-    print("lll")
     enc = (json.dumps(matched_faces, cls=CustomEncoder))
-    print("jjj")
 
     # # build a response dict to send back to client
     response = {'success': True, 'message': 'image received and processed', \
@@ -184,9 +178,7 @@ def test_fullfile():
 
     # # encode response using jsonpickle
     response_pickled = jsonpickle.encode(response)
-
-    print("Pickling done")
-
+    
     return Response(response=response_pickled, status=200, mimetype="application/json")
 
 
