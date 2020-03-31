@@ -192,7 +192,10 @@ def face_extract_client(filename, server_ip_finder):
             if ExifTags.TAGS[orientation]=='Orientation':
                 break
 
-        exif=dict(image._getexif().items())
+        if 'items' in dir(image._getexif()):
+            exif=dict(image._getexif().items())
+        else:
+            exif = {}
 
         for face_num in range(len(matched_faces)):
             matched_faces[face_num].reconstruct_square_face(filename)
@@ -258,6 +261,7 @@ if __name__ == "__main__":
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1245.JPG'
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-16 13.01.55.jpg'
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Nathaniel Fun/DSC_2715.JPG'
+        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.31.26.jpg'
 
         # mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
         # mf = face_extract_client('/home/benjamin/Desktop/DSC_1209.JPG', client_ip)

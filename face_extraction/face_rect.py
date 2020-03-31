@@ -24,7 +24,10 @@ class FaceRect:
             if ExifTags.TAGS[orientation]=='Orientation':
                 break
 
-        exif=dict(image._getexif().items())
+        if 'items' in dir(image._getexif()):
+            exif=dict(image._getexif().items())
+        else:
+            return image_chip
 
         if not orientation in exif.keys():
             return image_chip            
