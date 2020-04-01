@@ -4,6 +4,8 @@ import numpy as np
 import hashlib
 import face_recognition
 from PIL import Image, ExifTags
+import cv2
+import matplotlib.pyplot as plt
 try:
     from .rectangle import Rectangle
 except ImportError:
@@ -47,23 +49,29 @@ class FaceRect:
 
         return image_chip
 
-    def reconstruct_square_face(self, pristine_img_path):
-        if self.square_top is None:
-            return
-        pristine_img = face_recognition.load_image_file(pristine_img_path)
-        pristine_img = self.__rotate_chip__(pristine_img_path, pristine_img)
-        square_img = pristine_img[self.square_top:self.square_bot, self.square_left:self.square_right]
+    # def reconstruct_square_face(self, pristine_img_path):
+    #     if self.square_top is None:
+    #         return
+    #     pristine_img = face_recognition.load_image_file(pristine_img_path)
+    #     pristine_img = self.__rotate_chip__(pristine_img_path, pristine_img)
+    #     square_img = pristine_img[self.square_top:self.square_bot, self.square_left:self.square_right]
 
-        self.square_face = square_img # self.__rotate_chip__(pristine_img_path, square_img)
+    #     self.square_face = square_img # self.__rotate_chip__(pristine_img_path, square_img)
 
 
-    def reconstruct_nonrect_face(self, pristine_img_path):
-        pristine_img = face_recognition.load_image_file(pristine_img_path)
-        pristine_img = self.__rotate_chip__(pristine_img_path, pristine_img)
+    def reconstruct_nonrect_face(self, img_path):
+        img = cv2.imread(img_path)
+        pristine_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        # pristine_img = face_recognition.load_image_file(pristine_img_path)
+        # pristine_img = self.__rotate_chip__(pristine_img_path, pristine_img)
         r = self.rectangle
+        # Center X and Y got screwed up somewhere, so fixing that.
+        r.centerX = (r.right + r.left) // 2
+        r.centerY = (r.bottom + r.top) // 2
+
         self.face_image_nonrect = pristine_img[r.top:r.bottom, r.left:r.right]
 
-        # self.face_image_nonrect = self.__rotate_chip__(pristine_img_path, self.face_image_nonrect)
+        self.add_square_face(pristine_img)
 
     def __eq__(self, otherFace):
         return self.rectangle == otherFace.rectangle
@@ -229,6 +237,11 @@ class FaceRect:
         
         im_h, im_w, _ = pristine_img.shape
         rect = self.rectangle
+
+        # Double-checking centers -- they got screwed up somewhere. 
+        # Center X and Y got screwed up somewhere, so fixing that.
+        rect.centerX = (rect.right + rect.left) // 2
+        rect.centerY = (rect.bottom + rect.top) // 2
 
         # Get a square face image as well. 
         square_size = np.max(( rect.width, rect.height ))

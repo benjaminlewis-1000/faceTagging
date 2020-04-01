@@ -195,7 +195,7 @@ def face_extract_client(filename, server_ip_finder):
     logger.debug('Elapsed time to extract faces from {} was {}'.format(filename, elapsed_time))
 
     for face_num in range(len(matched_faces)):
-        matched_faces[face_num].reconstruct_square_face(filename)
+        # matched_faces[face_num].reconstruct_square_face(filename)
         matched_faces[face_num].reconstruct_nonrect_face(filename)
 
     return matched_faces
@@ -217,6 +217,7 @@ if __name__ == "__main__":
         # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-16 09.01.41.jpg' # 6 exif, tagged face
         # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-15 20.05.38-1.jpg' # 3 exif, tagged face
         # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-07-06 11.54.44.jpg' # 6 exif data, no tagged faces
+        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1241.JPG'
         # for root, dirs, files in os.walk('/mnt/NAS/Photos/Pictures_In_Progress/2019/'):
         #     for f in files:
         #         if not f.lower().endswith(('.jpg', '.jpeg')):
@@ -252,6 +253,8 @@ if __name__ == "__main__":
         for i in range(len(mf)):
             r = mf[i].rectangle
             cv2.rectangle(img, (r.left, r.top), (r.right, r.bottom), (255, 255, 130), 18)
+            plt.imshow(mf[i].square_face)
+            plt.show()
         plt.imshow(img)
         plt.show()
         logger.debug(mf)

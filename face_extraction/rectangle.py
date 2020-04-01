@@ -147,8 +147,12 @@ class Rectangle():
         self.right = self.left + self.width
         assert self.left < self.right
         assert self.top < self.bottom
-        self.centerX = (self.right - self.left) // 2
-        self.centerY = (self.bottom - self.top) // 2
+        self.centerX = (self.right + self.left) // 2
+        self.centerY = (self.bottom + self.top) // 2
+        assert self.left < self.centerX
+        assert self.centerX < self.right
+        assert self.top < self.centerY
+        assert self.centerY < self.bottom
 
     def intersect(self, otherRectangle):
         # Find the number of pixels that overlap between two rectangles. 
