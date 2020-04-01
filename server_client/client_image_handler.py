@@ -218,6 +218,7 @@ if __name__ == "__main__":
         # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-15 20.05.38-1.jpg' # 3 exif, tagged face
         # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-07-06 11.54.44.jpg' # 6 exif data, no tagged faces
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1241.JPG'
+        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.48.10.jpg'
         # for root, dirs, files in os.walk('/mnt/NAS/Photos/Pictures_In_Progress/2019/'):
         #     for f in files:
         #         if not f.lower().endswith(('.jpg', '.jpeg')):

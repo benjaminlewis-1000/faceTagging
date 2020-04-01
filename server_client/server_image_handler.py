@@ -46,7 +46,6 @@ WantedBy=suspend.target hibernate.target hybrid-sleep.target suspend-then-hibern
 '''
 
 PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-print(PARENT_DIR)
 sys.path.append(PARENT_DIR)
 
 

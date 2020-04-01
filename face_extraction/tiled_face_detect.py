@@ -5,6 +5,7 @@ import numpy as np
 import itertools
 import time
 import face_recognition
+import matplotlib.pyplot as plt
 if __name__ == "__main__":
     from rectangle import Rectangle 
     from face_rect import FaceRect
@@ -175,7 +176,7 @@ def detect_pyramid(cv_image, parameters):
                     # has been made yet -- that's in another script. 
                     faceList.append(face)
 
-                    
+    faceList = list(set(faceList))
     elapsed_time = time.time() - start_time
     print("Elapsed time is : " + str( elapsed_time ) )
 
@@ -213,9 +214,10 @@ if __name__ == "__main__":
     # path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-16 13.01.55.jpg'
     # path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Nathaniel Fun/DSC_2715.JPG'
     # path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.31.26.jpg'
-    # path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1224.JPG'
+    path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1224.JPG'
+    path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.48.10.jpg'
     # path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1174.JPG'
-    path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-07-06 11.54.44.jpg'
+    # path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-07-06 11.54.44.jpg'
 
 
 
@@ -245,6 +247,10 @@ if __name__ == "__main__":
             # Rotate left
             img = np.rot90(img_o, 1) # 90, expand=True)
             # img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        else:
+            img = img_o
+    else:
+        img = img_o
 
     print(type(img), img.dtype)
 
@@ -254,6 +260,7 @@ if __name__ == "__main__":
 
     faces, time = detect_pyramid(img, config['params']['tiled_detect_params'])
     print(len(faces))
+    print(len(set(faces)))
     for f in faces:
         r = f.rectangle
         print(r)
