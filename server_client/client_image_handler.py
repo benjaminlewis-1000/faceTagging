@@ -194,69 +194,9 @@ def face_extract_client(filename, server_ip_finder):
 
     logger.debug('Elapsed time to extract faces from {} was {}'.format(filename, elapsed_time))
 
-    if len(matched_faces) > 0: 
-
-
-        image = Image.open(filename)
-        for orientation in ExifTags.TAGS.keys():
-            if ExifTags.TAGS[orientation]=='Orientation':
-                break
-
-        if 'items' in dir(image._getexif()):
-            exif=dict(image._getexif().items())
-        else:
-            exif = {}
-
-        for face_num in range(len(matched_faces)):
-            matched_faces[face_num].reconstruct_square_face(filename)
-            matched_faces[face_num].reconstruct_nonrect_face(filename)
-
-            if not orientation in exif.keys():
-                continue
-
-            mfi = matched_faces[face_num].square_face
-            rect = matched_faces[face_num].rectangle
-            top_i = rect.top
-            left_i = rect.left
-            r_height = rect.height
-            r_width = rect.width
-            im_height = image.height
-            im_width = image.width
-            imm = cv2.imread(filename)
-
-            if exif[orientation] == 3:
-                # Rotate 180
-                # matched_faces[face_num].square_face=np.rot90(mfi, 2) # image.rotate(180, expand=True)
-                top = im_height - top_i - 1 - r_height
-                left = im_width - left_i - 1 - r_width
-            elif exif[orientation] == 6:
-                # Rotate right
-                # matched_faces[face_num].square_face=np.rot90(mfi, 3) # image.rotate(270, expand=True)
-
-                left = im_height - top_i - r_height
-                top = left_i
-                # right = top
-                # top = left
-                # left = right - r_width
-                # left = im_height - left - 1
-                # top = im_width - top - 1
-                wid = r_width
-                r_width = r_height
-                r_height = wid
-            elif exif[orientation] == 8:
-                # Rotate left
-                # matched_faces[face_num].square_face=np.rot90(mfi, 1) # image.rotate(90, expand=True)
-                top = im_width - left_i - r_width
-                left = top_i
-                wid = r_width
-                r_width = r_height
-                r_height = wid
-            else:
-                top = top_i
-                left = left_i
-                
-            matched_faces[face_num].rectangle = face_extraction.rectangle.Rectangle(height=int(r_height), \
-                width=int(r_width), topEdge=int(top), leftEdge=int(left))
+    for face_num in range(len(matched_faces)):
+        matched_faces[face_num].reconstruct_square_face(filename)
+        matched_faces[face_num].reconstruct_nonrect_face(filename)
 
     return matched_faces
 
@@ -274,6 +214,7 @@ if __name__ == "__main__":
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.31.26.jpg'
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1224.JPG'
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1174.JPG'
+        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-07-06 11.54.44.jpg'
 
         # mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
         # mf = face_extract_client('/home/benjamin/Desktop/DSC_1209.JPG', client_ip)
@@ -288,8 +229,8 @@ if __name__ == "__main__":
         for i in range(len(mf)):
             r = mf[i].rectangle
             cv2.rectangle(img, (r.left, r.top), (r.right, r.bottom), (255, 255, 130), 18)
-            # plt.imshow(mf[i].square_face)
-            # plt.show()
+            plt.imshow(mf[i].square_face)
+            plt.show()
         plt.imshow(img)
         plt.show()
     logger.debug(mf)

@@ -1,10 +1,13 @@
 #! /usr/bin/env python
 
-from .rectangle import Rectangle
 import numpy as np
 import hashlib
 import face_recognition
 from PIL import Image, ExifTags
+try:
+    from .rectangle import Rectangle
+except ImportError:
+    from rectangle import Rectangle
 
 class FaceRect:
     def __init__(self, rectangle, face_image, detection_level, encoding = None, name=None, square_face = None):
@@ -48,17 +51,19 @@ class FaceRect:
         if self.square_top is None:
             return
         pristine_img = face_recognition.load_image_file(pristine_img_path)
+        pristine_img = self.__rotate_chip__(pristine_img_path, pristine_img)
         square_img = pristine_img[self.square_top:self.square_bot, self.square_left:self.square_right]
 
-        self.square_face = self.__rotate_chip__(pristine_img_path, square_img)
+        self.square_face = square_img # self.__rotate_chip__(pristine_img_path, square_img)
 
 
     def reconstruct_nonrect_face(self, pristine_img_path):
         pristine_img = face_recognition.load_image_file(pristine_img_path)
+        pristine_img = self.__rotate_chip__(pristine_img_path, pristine_img)
         r = self.rectangle
         self.face_image_nonrect = pristine_img[r.top:r.bottom, r.left:r.right]
 
-        self.face_image_nonrect = self.__rotate_chip__(pristine_img_path, self.face_image_nonrect)
+        # self.face_image_nonrect = self.__rotate_chip__(pristine_img_path, self.face_image_nonrect)
 
     def __eq__(self, otherFace):
         return self.rectangle == otherFace.rectangle
@@ -261,7 +266,7 @@ class FaceRect:
 
         sq_h, sq_w, ch = square_img.shape
         assert ch == 3
-        assert np.abs(sq_h - sq_w) <= 1
+        assert np.abs(sq_h - sq_w) <= 2
         assert sq_h > 0
 
         self.square_face = square_img

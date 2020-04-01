@@ -3,10 +3,14 @@
 import cv2
 import numpy as np
 import itertools
-from .rectangle import Rectangle 
-from .face_rect import FaceRect
 import time
 import face_recognition
+if __name__ == "__main__":
+    from rectangle import Rectangle 
+    from face_rect import FaceRect
+else:
+    from .rectangle import Rectangle 
+    from .face_rect import FaceRect
 
 # For my particular GPU, I'm finding that I can upsize by 3x for a 280 * 420 image,
 # or by 2x for a 350 * 530 image. 
@@ -171,6 +175,7 @@ def detect_pyramid(cv_image, parameters):
                     # has been made yet -- that's in another script. 
                     faceList.append(face)
 
+                    
     elapsed_time = time.time() - start_time
     print("Elapsed time is : " + str( elapsed_time ) )
 
@@ -195,5 +200,74 @@ def detect_pyramid(cv_image, parameters):
 
 
 if __name__ == "__main__":
+
+    import os
+    import xmltodict
+    import matplotlib.pyplot as plt
+    from PIL import Image, ExifTags
+
     path = '/home/benjamin/Desktop/photos_for_test/train/B+J-36wedding.jpg'
 
+    path = '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/DSC_4551.JPG'
+    path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1245.JPG'
+    # path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-16 13.01.55.jpg'
+    # path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Nathaniel Fun/DSC_2715.JPG'
+    # path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.31.26.jpg'
+    # path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1224.JPG'
+    # path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1174.JPG'
+    path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-07-06 11.54.44.jpg'
+
+
+
+    image = Image.open(path)
+    for orientation in ExifTags.TAGS.keys():
+        if ExifTags.TAGS[orientation]=='Orientation':
+            break
+    if 'items' in dir(image._getexif()):
+        exif=dict(image._getexif().items())
+    else:
+        exif = {}
+        
+
+    img_o = face_recognition.load_image_file(path)
+
+    if orientation in exif.keys():
+        print(exif[orientation])
+        if exif[orientation] == 3:
+            # Rotate 180
+            img = np.rot90(img_o, 2) # 180, expand=True
+            # img = cv2.rotate(img, cv2.ROTATE_180)
+        elif exif[orientation] == 6:
+            # Rotate right
+            # img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+            img = np.rot90(img_o, 3) # 270, expand=True)
+        elif exif[orientation] == 8:
+            # Rotate left
+            img = np.rot90(img_o, 1) # 90, expand=True)
+            # img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+
+    print(type(img), img.dtype)
+
+    PARENT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
+        config = xmltodict.parse(p.read())
+
+    faces, time = detect_pyramid(img, config['params']['tiled_detect_params'])
+    print(len(faces))
+    for f in faces:
+        r = f.rectangle
+        print(r)
+        # print(r.left, r.top, r.right, r.bottom)
+        cv2.rectangle(img, (r.left, r.top), (r.right, r.bottom), (255, 255, 130), 18)
+        sub = img[r.top:r.bottom, r.left:r.right]
+        # plt.imshow(sub)
+        # plt.show()
+
+    plt.imshow(img)
+    plt.show()
+    # plt.imshow(img)
+    # plt.show()
+    # cv2.namedWindow('image',cv2.WINDOW_NORMAL)
+    # cv2.resizeWindow('image', 600,600)
+    # cv2.imshow('image', img)
+    # cv2.waitKey(5)

@@ -52,7 +52,7 @@ sys.path.append(PARENT_DIR)
 
 from .server_ip_discover import ip_responder
 from flask import Flask, request, Response
-from PIL import Image
+from PIL import Image, ExifTags
 import base64
 import cv2
 import face_extraction
@@ -63,7 +63,6 @@ import json
 import jsonpickle
 import logging
 import numpy as np
-import xmltodict
 import xmltodict
 
 

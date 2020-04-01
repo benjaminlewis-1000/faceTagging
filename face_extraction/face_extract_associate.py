@@ -1,18 +1,19 @@
 #! /usr/bin/env python
 
-import face_recognition 
-import os
+from PIL import Image, ExifTags
+import copy
 import cv2
-import numpy as np
-import itertools
 import face_extraction
+import face_recognition 
+import io
+import itertools
+import logging
+import matplotlib.pyplot as plt
+import numpy as np
+import os
 import random
 import time
-import logging
-import io
 import xmltodict
-import matplotlib.pyplot as plt
-from PIL import Image, ExifTags
 
 def extract_faces_from_image(image_path, parameters):
     assert isinstance(image_path, str) or isinstance(image_path, io.BytesIO)
@@ -26,11 +27,38 @@ def extract_faces_from_image(image_path, parameters):
 
     npImage = face_recognition.load_image_file(image_path)
 
+    ##########################################
+    # Rotate the image based on metadata 
+    image_exif = Image.open(image_path)
+
+    for orientation in ExifTags.TAGS.keys():
+        if ExifTags.TAGS[orientation]=='Orientation':
+            break
+
+    if 'items' in dir(image_exif._getexif()):
+        exif=dict(image_exif._getexif().items())
+    else:
+        exif = {}
+
+    if orientation in exif.keys():
+        print(exif[orientation])
+        if exif[orientation] == 3:
+            # Rotate 180
+            npImage = cv2.rotate(npImage, cv2.ROTATE_180)
+        elif exif[orientation] == 6:
+            # Rotate right
+            npImage = cv2.rotate(npImage, cv2.ROTATE_90_CLOCKWISE)
+        elif exif[orientation] == 8:
+            # Rotate left
+            npImage = cv2.rotate(npImage, cv2.ROTATE_90_COUNTERCLOCKWISE)
+
+    pristine_image = copy.deepcopy(npImage) 
+
+    ##########################################
+    # Get the faces from XMP data, then detect faces with deep neural network
     success_faces, tagged_faces = face_extraction.Get_XMP_Faces(image_path)
 
     ml_detected_faces, elapsed_time = face_extraction.detect_pyramid(npImage, tiled_params)
-
-    pristine_image = face_recognition.load_image_file(image_path)
 
     assert success_faces, 'Picasa face extraction failed.'
 
