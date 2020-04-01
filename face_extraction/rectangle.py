@@ -61,39 +61,39 @@ class Rectangle():
         assert halfHeightUp + halfHeightDown == height, 'Didn''t do math right on height. {} + {} = {}'.format(halfHeightUp, halfHeightDown, height)
 
         if self.centerX: # We have a center point
-            self.centerPoint = Point(self.centerX, self.centerY)
-            self.bottomLeft = Point(self.centerX - halfWidthLeft, self.centerY + halfHeightUp)
-            self.bottomRight = Point(self.centerX + halfWidthRight, self.centerY + halfHeightUp)
-            self.topLeft = Point(self.centerX - halfWidthLeft, self.centerY - halfHeightDown)
-            self.topRight = Point(self.centerX + halfWidthRight, self.centerY - halfHeightDown)
+            centerPoint = Point(self.centerX, self.centerY)
+            bottomLeft = Point(self.centerX - halfWidthLeft, self.centerY + halfHeightUp)
+            bottomRight = Point(self.centerX + halfWidthRight, self.centerY + halfHeightUp)
+            topLeft = Point(self.centerX - halfWidthLeft, self.centerY - halfHeightDown)
+            topRight = Point(self.centerX + halfWidthRight, self.centerY - halfHeightDown)
         else:
-            self.topLeft = Point(self.leftEdge, self.topEdge)
-            self.centerPoint = Point(self.leftEdge + halfWidthLeft, self.topEdge + halfHeightDown)
-            self.bottomLeft = Point(self.leftEdge, self.topEdge + self.height)
-            self.bottomRight = Point(self.leftEdge + self.width, self.topEdge + self.height)
-            self.topRight = Point(self.leftEdge + self.width, self.topEdge)
+            topLeft = Point(self.leftEdge, self.topEdge)
+            centerPoint = Point(self.leftEdge + halfWidthLeft, self.topEdge + halfHeightDown)
+            bottomLeft = Point(self.leftEdge, self.topEdge + self.height)
+            bottomRight = Point(self.leftEdge + self.width, self.topEdge + self.height)
+            topRight = Point(self.leftEdge + self.width, self.topEdge)
 
-        self.right = int(self.topRight.x)
-        self.left = int(self.topLeft.x)
-        self.top = int(self.topLeft.y)
-        self.bottom = int(self.bottomLeft.y)
-        self.centerX = int(self.centerPoint.x)
-        self.centerY = int(self.centerPoint.y)
+        self.right = int(topRight.x)
+        self.left = int(topLeft.x)
+        self.top = int(topLeft.y)
+        self.bottom = int(bottomLeft.y)
+        self.centerX = int(centerPoint.x)
+        self.centerY = int(centerPoint.y)
 
-        assert self.topLeft.vertAlign(self.bottomLeft)
-        assert self.topRight.vertAlign(self.bottomRight)
+        assert topLeft.vertAlign(bottomLeft)
+        assert topRight.vertAlign(bottomRight)
 
-        assert self.topLeft.horizAlign(self.topRight)
-        assert self.bottomLeft.horizAlign(self.bottomRight)
+        assert topLeft.horizAlign(topRight)
+        assert bottomLeft.horizAlign(bottomRight)
 
-        assert self.topLeft.isLeftOf(self.topRight)
-        assert self.topLeft.isAbove(self.bottomLeft)
+        assert topLeft.isLeftOf(topRight)
+        assert topLeft.isAbove(bottomLeft)
 
-        assert self.centerPoint.isLeftOf(self.topRight)
-        assert self.topLeft.isLeftOf(self.centerPoint)
+        assert centerPoint.isLeftOf(topRight)
+        assert topLeft.isLeftOf(centerPoint)
 
-        assert self.centerPoint.isAbove(self.bottomRight)
-        assert self.topLeft.isAbove(self.centerPoint)
+        assert centerPoint.isAbove(bottomRight)
+        assert topLeft.isAbove(centerPoint)
 
         self.area = width * height
 
@@ -114,6 +114,42 @@ class Rectangle():
         self.width = int(self.width)
         self.height = int(self.height)
 
+    def rotate_in_img(self, rot_angle, initial_img_size):
+        # initial_img_size is the shape of the image before it was rotate.
+        assert rot_angle in [0, 90, 180, 270]
+        # Copy initial state
+        top = self.top
+        bot = self.bottom
+        lef = self.left
+        rig = self.right
+        w_i = self.width
+        h_i = self.height
+        im_height = initial_img_size[0]
+        im_width = initial_img_size[1]
+
+        if rot_angle == 0:
+            return
+        elif rot_angle == 90:
+            self.top = im_width - lef - self.width
+            self.left = top
+            self.width = h_i
+            self.height = w_i
+        elif rot_angle == 180:
+            self.top = im_height - top - self.height - 1
+            self.left = im_width - lef - 1 - self.width
+        else: # 270
+            self.top = lef
+            self.left = im_height - top - self.height
+            self.width = h_i
+            self.height = w_i
+
+        self.bottom = self.top + self.height
+        self.right = self.left + self.width
+        assert self.left < self.right
+        assert self.top < self.bottom
+        self.centerX = (self.right - self.left) // 2
+        self.centerY = (self.bottom - self.top) // 2
+
     def intersect(self, otherRectangle):
         # Find the number of pixels that overlap between two rectangles. 
 
@@ -129,15 +165,6 @@ class Rectangle():
 
         return overlapArea
 
-        # r1_percent = overlapArea / self.area
-        # r2_percent = overlapArea / otherRectangle.area
-
-        # overlap_dict = dict()
-        # overlap_dict['area'] = overlapArea
-        # overlap_dict['r1_percent'] = r1_percent
-        # overlap_dict['r2_percent'] = r2_percent
-        # return overlap_dict
-
     def union(self, otherRectangle):
         return self.area + otherRectangle.area - self.intersect(otherRectangle)
 
@@ -150,26 +177,6 @@ class Rectangle():
         w = int(self.width)
         h = int(self.height)
         cv.rectangle(cvImg,(x,y),(x+w,y+h),colorTriple, lineWidth)
-
-    # def mergeWith(self, otherRectangle):
-    #     ovd = self.intersect(otherRectangle)
-
-    #     mergeDict = dict
-
-    #     if ovd['r1_percent'] > 0 and ovd['r2_percent'] > 0:
-    #         leftmost = min(self.left, otherRectangle.left)
-    #         rightmost = max(self.right, otherRectangle.right)
-    #         topmost = min(self.top, otherRectangle.top)
-    #         bottommost = max(self.bottom, otherRectangle.bottom)
-
-    #         height = bottommost - topmost
-    #         width = rightmost - leftmost
-
-    #         newRect = Rectangle(height, width, leftEdge = leftmost, topEdge = topmost)
-    #         return newRect
-
-    #     else:
-    #         return None
 
     def distance(self, other_rect):
         x_dist = self.centerX - other_rect.centerX
@@ -210,10 +217,6 @@ class Rectangle():
     def __repr__(self):
         return "Rectangle: \n  Height: {}\n  Width: {}\n  Top-left: {} x, {} y\n"\
             .format(int(self.height), int(self.width), int(self.left), int(self.top))
-        # return json.dumps(self.__dict__)
-
-    # def toJSON(self):
-    #     return json.dumps(self.__dict__)
 
     def copy(self):
         newone = type(self)(int(self.height), int(self.width), centerX = self.centerX, centerY = self.centerY)

@@ -26,6 +26,12 @@ def extract_faces_from_image(image_path, parameters):
     tiled_params = parameters['params']['tiled_detect_params']
 
     npImage = face_recognition.load_image_file(image_path)
+    initial_shape = npImage.shape
+
+    ##########################################
+    # Get the faces from XMP data, then detect faces with deep neural network
+    # If we have rotated the image, we need to rotate the tagged faces as well.
+    success_faces, tagged_faces = face_extraction.Get_XMP_Faces(image_path)
 
     ##########################################
     # Rotate the image based on metadata 
@@ -45,18 +51,22 @@ def extract_faces_from_image(image_path, parameters):
         if exif[orientation] == 3:
             # Rotate 180
             npImage = cv2.rotate(npImage, cv2.ROTATE_180)
+            for i in range(len(tagged_faces)):
+                tagged_faces[i]['bounding_rectangle'].rotate_in_img(180, initial_shape)
         elif exif[orientation] == 6:
-            # Rotate right
+            # Rotate right -- 270
             npImage = cv2.rotate(npImage, cv2.ROTATE_90_CLOCKWISE)
+            for i in range(len(tagged_faces)):
+                tagged_faces[i]['bounding_rectangle'].rotate_in_img(270, initial_shape)
         elif exif[orientation] == 8:
-            # Rotate left
+            # Rotate left -- 90 
             npImage = cv2.rotate(npImage, cv2.ROTATE_90_COUNTERCLOCKWISE)
+            for i in range(len(tagged_faces)):
+                tagged_faces[i]['bounding_rectangle'].rotate_in_img(90, initial_shape)
 
     pristine_image = copy.deepcopy(npImage) 
 
-    ##########################################
-    # Get the faces from XMP data, then detect faces with deep neural network
-    success_faces, tagged_faces = face_extraction.Get_XMP_Faces(image_path)
+
 
     ml_detected_faces, elapsed_time = face_extraction.detect_pyramid(npImage, tiled_params)
 

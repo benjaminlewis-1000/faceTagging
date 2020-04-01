@@ -207,15 +207,38 @@ if __name__ == "__main__":
     if 'IN_DOCKER' in os.environ.keys() and os.environ['IN_DOCKER']:
         mf = face_extract_client(os.path.join('/test_imgs_filepopulate/', 'has_face_tags.jpg'), client_ip)
     else:
-        file = '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/DSC_4551.JPG'
-        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1245.JPG'
-        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-16 13.01.55.jpg'
-        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Nathaniel Fun/DSC_2715.JPG'
-        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.31.26.jpg'
-        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1224.JPG'
-        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1174.JPG'
-        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-07-06 11.54.44.jpg'
+        file = '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/DSC_4551.JPG' # 8 exif, no tagged faces
+        # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1245.JPG' # 1 exif, tagged faces
+        # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-16 13.01.55.jpg' # No exif, tagged face
+        # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.31.26.jpg' # No exif or tags
+        # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1224.JPG' # 1 exif data, tagged faces
+        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1174.JPG' # 1 exif data, tagged faces
+        # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Nathaniel Fun/DSC_2715.JPG' # 8 exif data, tagged faces
+        # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-16 09.01.41.jpg' # 6 exif, tagged face
+        # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-15 20.05.38-1.jpg' # 3 exif, tagged face
+        # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-07-06 11.54.44.jpg' # 6 exif data, no tagged faces
+        # for root, dirs, files in os.walk('/mnt/NAS/Photos/Pictures_In_Progress/2019/'):
+        #     for f in files:
+        #         if not f.lower().endswith(('.jpg', '.jpeg')):
+        #             continue
+        #         file = os.path.join(root, f)
 
+        image = Image.open(file)
+        for orientation in ExifTags.TAGS.keys():
+            if ExifTags.TAGS[orientation]=='Orientation':
+                break
+
+        if 'items' in dir(image._getexif()):
+            exif=dict(image._getexif().items())
+        else:
+            exif = {}
+
+        if orientation in exif.keys():
+            print(exif[orientation])
+        # if orientation not in exif.keys() or exif[orientation] != 3:
+        #     continue
+
+        print(file)
         # mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
         # mf = face_extract_client('/home/benjamin/Desktop/DSC_1209.JPG', client_ip)
         mf = face_extract_client(file, client_ip)
@@ -229,11 +252,9 @@ if __name__ == "__main__":
         for i in range(len(mf)):
             r = mf[i].rectangle
             cv2.rectangle(img, (r.left, r.top), (r.right, r.bottom), (255, 255, 130), 18)
-            plt.imshow(mf[i].square_face)
-            plt.show()
         plt.imshow(img)
         plt.show()
-    logger.debug(mf)
+        logger.debug(mf)
 
     # out = {'8': '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/DSC_4551.JPG', \
     #        '6': '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/20200225_170413.jpg', \
