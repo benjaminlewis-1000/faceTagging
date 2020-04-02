@@ -207,21 +207,23 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from PIL import Image, ExifTags
 
-    path = '/home/benjamin/Desktop/photos_for_test/train/B+J-36wedding.jpg'
+    file = '/home/benjamin/Desktop/photos_for_test/train/B+J-36wedding.jpg'
 
-    path = '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/DSC_4551.JPG'
-    path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1245.JPG'
-    # path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-16 13.01.55.jpg'
-    # path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Nathaniel Fun/DSC_2715.JPG'
-    # path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.31.26.jpg'
-    path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1224.JPG'
-    path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.48.10.jpg'
-    # path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1174.JPG'
-    # path = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-07-06 11.54.44.jpg'
+    file = '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/DSC_4551.JPG'
+    file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1245.JPG'
+    # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-16 13.01.55.jpg'
+    # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Nathaniel Fun/DSC_2715.JPG'
+    # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.31.26.jpg'
+    file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1224.JPG'
+    file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.48.10.jpg'
+    # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1174.JPG'
+    # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-07-06 11.54.44.jpg'
+    file = "/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-07-27 20.23.41.jpg"
+    file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-11-23 15.07.24.jpg'
 
 
 
-    image = Image.open(path)
+    image = Image.open(file)
     for orientation in ExifTags.TAGS.keys():
         if ExifTags.TAGS[orientation]=='Orientation':
             break
@@ -231,22 +233,22 @@ if __name__ == "__main__":
         exif = {}
         
 
-    img_o = face_recognition.load_image_file(path)
+    img_o = face_recognition.load_image_file(file)
 
     if orientation in exif.keys():
         print(exif[orientation])
-        if exif[orientation] == 3:
-            # Rotate 180
-            img = np.rot90(img_o, 2) # 180, expand=True
-            # img = cv2.rotate(img, cv2.ROTATE_180)
-        elif exif[orientation] == 6:
-            # Rotate right
-            # img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
-            img = np.rot90(img_o, 3) # 270, expand=True)
-        elif exif[orientation] == 8:
-            # Rotate left
-            img = np.rot90(img_o, 1) # 90, expand=True)
-            # img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+
+        if orientation in exif.keys():
+            if exif[orientation] == 3:
+                # Rotate 180
+                img = cv2.rotate(img_o, cv2.ROTATE_180)
+            elif exif[orientation] == 6:
+                # Rotate right -- 270
+                img = cv2.rotate(img_o, cv2.ROTATE_90_CLOCKWISE)
+            elif exif[orientation] == 8:
+                # Rotate left -- 90 
+                img = cv2.rotate(img_o, cv2.ROTATE_90_COUNTERCLOCKWISE)
+                
         else:
             img = img_o
     else:

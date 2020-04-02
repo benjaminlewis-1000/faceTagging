@@ -3,7 +3,6 @@
 from PIL import Image, ExifTags
 import copy
 import cv2
-import face_extraction
 import face_recognition 
 import io
 import itertools
@@ -11,6 +10,16 @@ import logging
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import sys
+
+
+PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+# print(PARENT_DIR)
+sys.path.append(PARENT_DIR)
+sys.path.append(THIS_DIR)
+
+import face_extraction
 import random
 import time
 import xmltodict
@@ -65,13 +74,11 @@ def extract_faces_from_image(image_path, parameters):
 
     pristine_image = copy.deepcopy(npImage) 
 
-
-
     ml_detected_faces, elapsed_time = face_extraction.detect_pyramid(npImage, tiled_params)
 
     assert success_faces, 'Picasa face extraction failed.'
 
-    matched_faces = associate_detections_and_tags(image_path, ml_detected_faces, tagged_faces, disp_photo=False, test=False)
+    matched_faces = associate_detections_and_tags(npImage, pristine_image, ml_detected_faces, tagged_faces, disp_photo=False, test=False)
 
     for idx in range(len(matched_faces)):
         matched_faces[idx].add_square_face(pristine_image)
@@ -139,7 +146,7 @@ def join_faces(pristine_image, tag_face, det_face=None):
     return face
 
 
-def associate_detections_and_tags(image_path, detected_faces, tagged_faces, disp_photo=False, test=False):
+def associate_detections_and_tags(image, pristine_image, detected_faces, tagged_faces, disp_photo=False, test=False):
     # Top-level function that takes a list of face_recognition
     # image pyramid detections (from my detect_pyramid function)
     # as well as tags from the XMP metadata (i.e. Picasa tags)
@@ -158,12 +165,12 @@ def associate_detections_and_tags(image_path, detected_faces, tagged_faces, disp
             assert 'Name' in tf.keys()
             assert 'bounding_rectangle' in tf.keys()
 
-    # Load in the pixels of the image, then copy it to
-    # pristine_image (that won't get drawn on)
-    image = face_recognition.load_image_file(
-        image_path)
-    pristine_image = face_recognition.load_image_file(
-        image_path)
+    # # Load in the pixels of the image, then copy it to
+    # # pristine_image (that won't get drawn on)
+    # image = face_recognition.load_image_file(
+    #     image_path)
+    # pristine_image = copy.deepface_recognition.load_image_file(
+    #     image_path)
 
     # A test case to see if we can reject super-huge
     # faces. 
@@ -243,7 +250,6 @@ def associate_detections_and_tags(image_path, detected_faces, tagged_faces, disp
 def _merge_detected_faces(list_of_detects, pristine_image):
     # Merge detections from multiple levels of the image
     # pyramid face detection. 
-
 
     def cluster_and_merge(detection_list, pristine_image):
         # This is a recursive algorithm. It takes a list of 
@@ -398,9 +404,10 @@ def _merge_detected_faces(list_of_detects, pristine_image):
 
         # Repeated call of cluster_and_merge until
         # there are no more to merge. 
-        sub_deconf, list_of_detects = cluster_and_merge(list_of_detects, pristine_image)
+        sub_deconf, list_of_detects = cluster_and_merge(list_of_detects + deconflicted_detections, pristine_image)
         # Add to the master list. 
-        deconflicted_detections += sub_deconf
+        deconflicted_detections = sub_deconf
+        p = copy.deepcopy(pristine_image)
 
     # Assertions. We don't want any of the deconflicted
     # detections to be the same rectangle. 
@@ -636,3 +643,46 @@ def _merge_detections_with_tags(detected_faces, tagged_faces, pristine_image):
             matched_face_rects.append(untouch_rect)
 
     return matched_face_rects
+
+
+if __name__ == "__main__":
+    file = "/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-07-27 20.23.41.jpg"
+    file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-11-23 15.07.24.jpg'
+
+    parameter_file=os.path.join(PARENT_DIR, 'parameters.xml')
+    with open(parameter_file, 'r') as fh:
+        parameters = xmltodict.parse(fh.read())
+
+    npImage = face_recognition.load_image_file(file)
+    image_exif = Image.open(file)
+
+    for orientation in ExifTags.TAGS.keys():
+        if ExifTags.TAGS[orientation]=='Orientation':
+            break
+
+    if 'items' in dir(image_exif._getexif()):
+        exif=dict(image_exif._getexif().items())
+    else:
+        exif = {}
+
+    print(exif[orientation])
+
+    if orientation in exif.keys():
+        if exif[orientation] == 3:
+            # Rotate 180
+            npImage = cv2.rotate(npImage, cv2.ROTATE_180)
+        elif exif[orientation] == 6:
+            # Rotate right -- 270
+            npImage = cv2.rotate(npImage, cv2.ROTATE_90_CLOCKWISE)
+        elif exif[orientation] == 8:
+            # Rotate left -- 90 
+            npImage = cv2.rotate(npImage, cv2.ROTATE_90_COUNTERCLOCKWISE)
+
+    matched_faces, ml_detected_faces, tagged_faces, elapsed_time = extract_faces_from_image(file, parameters)
+
+    for mf in matched_faces:
+        r = mf.rectangle
+        cv2.rectangle(npImage, (r.left, r.top), (r.right, r.bottom), (255, 200, 200), 15)
+
+    plt.imshow(npImage)
+    plt.show()

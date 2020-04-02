@@ -219,6 +219,8 @@ if __name__ == "__main__":
         # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-07-06 11.54.44.jpg' # 6 exif data, no tagged faces
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1241.JPG'
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.48.10.jpg'
+        # file = "/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-07-27 20.23.41.jpg" 
+        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-11-23 15.07.24.jpg'
         # for root, dirs, files in os.walk('/mnt/NAS/Photos/Pictures_In_Progress/2019/'):
         #     for f in files:
         #         if not f.lower().endswith(('.jpg', '.jpeg')):
@@ -254,8 +256,8 @@ if __name__ == "__main__":
         for i in range(len(mf)):
             r = mf[i].rectangle
             cv2.rectangle(img, (r.left, r.top), (r.right, r.bottom), (255, 255, 130), 18)
-            plt.imshow(mf[i].square_face)
-            plt.show()
+            # plt.imshow(mf[i].square_face)
+            # plt.show()
         plt.imshow(img)
         plt.show()
         logger.debug(mf)
