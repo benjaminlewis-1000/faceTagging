@@ -8,7 +8,10 @@ import sys
 # print(PARENT_DIR)
 # sys.path.append(PARENT_DIR)
 
-from .rectangle import Rectangle
+if __name__ == "__main__":
+    from rectangle import Rectangle 
+else:
+    from .rectangle import Rectangle 
 from PIL import Image
 from time import sleep
 import binascii
@@ -90,10 +93,13 @@ def Get_XMP_Faces(file, test=False):
                 # height of the face location. 
                 def get_person_data(person_dict):
                     person_data = person_dict['rdf:Description']
-                    assert '@mwg-rs:Name' in person_data.keys()
+                    # assert '@mwg-rs:Name' in person_data.keys()
                     assert '@mwg-rs:Type' in person_data.keys()
                     assert 'mwg-rs:Area' in person_data.keys()
-                    name = person_data['@mwg-rs:Name']
+                    if '@mwg-rs:Name' not in person_data.keys():
+                        return
+                    else:
+                        name = person_data['@mwg-rs:Name']
                     assert person_data['@mwg-rs:Type'] == 'Face'
                     area = person_data['mwg-rs:Area']
                     area_x = area['@stArea:x']
@@ -104,10 +110,14 @@ def Get_XMP_Faces(file, test=False):
 
                 # Two options, both have the person data. 
                 if isinstance(bag_data, collections.OrderedDict):
-                    persons.append(get_person_data(bag_data))
+                    person_data = get_person_data(bag_data)
+                    if person_data is not None:
+                        persons.append(person_data)
                 elif len(bag_data) and isinstance(bag_data[0], collections.OrderedDict):
                     for person_num in range(len(bag_data)):
-                        persons.append(get_person_data(bag_data[person_num]))
+                        person_data = get_person_data(bag_data[person_num])
+                        if person_data is not None:
+                            persons.append(person_data)
 
         except xml.parsers.expat.ExpatError:
             pass
@@ -163,3 +173,5 @@ def Get_XMP_Faces(file, test=False):
 
 if __name__ == "__main__":
     print(Get_XMP_Faces(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), True))
+    file = '/mnt/NAS/Photos/Completed/Pictures_finished/Mission/estancia/food/IMG_0054.JPG'
+    print(Get_XMP_Faces(file, True))
