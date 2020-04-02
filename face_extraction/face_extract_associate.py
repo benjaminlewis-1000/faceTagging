@@ -400,14 +400,30 @@ def _merge_detected_faces(list_of_detects, pristine_image):
     iters = 0
     while(len(list_of_detects) > 0):
         iters += 1 
-        assert iters < 50
 
         # Repeated call of cluster_and_merge until
         # there are no more to merge. 
         sub_deconf, list_of_detects = cluster_and_merge(list_of_detects + deconflicted_detections, pristine_image)
         # Add to the master list. 
+        # print(f"Sub: {len(sub_deconf)}, list: {len(list_of_detects)}")
         deconflicted_detections = sub_deconf
-        p = copy.deepcopy(pristine_image)
+
+        if iters == 10:
+            deconflicted_detections += list_of_detects
+            break
+
+        # npImage = copy.deepcopy(pristine_image)
+
+        # for mf in sub_deconf:
+        #     r = mf.rectangle
+        #     cv2.rectangle(npImage, (r.left, r.top), (r.right, r.bottom), (255, 200, 200), 15)
+
+        # for mf in list_of_detects:
+        #     r = mf.rectangle
+        #     cv2.rectangle(npImage, (r.left, r.top), (r.right, r.bottom), (55, 100, 200), 15)
+
+        # plt.imshow(npImage)
+        # plt.show()
 
     # Assertions. We don't want any of the deconflicted
     # detections to be the same rectangle. 
@@ -648,6 +664,7 @@ def _merge_detections_with_tags(detected_faces, tagged_faces, pristine_image):
 if __name__ == "__main__":
     file = "/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-07-27 20.23.41.jpg"
     file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-11-23 15.07.24.jpg'
+    file = '/mnt/NAS/Photos/Completed/Pictures_finished/Peru 2012/peru 025.JPG'
 
     parameter_file=os.path.join(PARENT_DIR, 'parameters.xml')
     with open(parameter_file, 'r') as fh:

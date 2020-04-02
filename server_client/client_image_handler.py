@@ -221,46 +221,49 @@ if __name__ == "__main__":
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.48.10.jpg'
         # file = "/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-07-27 20.23.41.jpg" 
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-11-23 15.07.24.jpg'
-        # for root, dirs, files in os.walk('/mnt/NAS/Photos/Pictures_In_Progress/2019/'):
-        #     for f in files:
-        #         if not f.lower().endswith(('.jpg', '.jpeg')):
-        #             continue
-        #         file = os.path.join(root, f)
 
-        image = Image.open(file)
-        for orientation in ExifTags.TAGS.keys():
-            if ExifTags.TAGS[orientation]=='Orientation':
-                break
+        def doFile(file):
+            image = Image.open(file)
+            for orientation in ExifTags.TAGS.keys():
+                if ExifTags.TAGS[orientation]=='Orientation':
+                    break
 
-        if 'items' in dir(image._getexif()):
-            exif=dict(image._getexif().items())
-        else:
-            exif = {}
+            if 'items' in dir(image._getexif()):
+                exif=dict(image._getexif().items())
+            else:
+                exif = {}
 
-        if orientation in exif.keys():
-            print(exif[orientation])
-        # if orientation not in exif.keys() or exif[orientation] != 3:
-        #     continue
+            if orientation in exif.keys():
+                print(exif[orientation])
+            # if orientation not in exif.keys() or exif[orientation] != 3:
+            #     continue
 
-        print(file)
-        # mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
-        # mf = face_extract_client('/home/benjamin/Desktop/DSC_1209.JPG', client_ip)
-        mf = face_extract_client(file, client_ip)
-        
-        # plt.imshow(mf[0].square_face)
-        # plt.show()
-        # plt.imshow(mf[1].square_face)
-        # plt.show()
-        img = cv2.imread(file)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        for i in range(len(mf)):
-            r = mf[i].rectangle
-            cv2.rectangle(img, (r.left, r.top), (r.right, r.bottom), (255, 255, 130), 18)
-            # plt.imshow(mf[i].square_face)
+            print(file)
+            # mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
+            # mf = face_extract_client('/home/benjamin/Desktop/DSC_1209.JPG', client_ip)
+            mf = face_extract_client(file, client_ip)
+            
+            # plt.imshow(mf[0].square_face)
             # plt.show()
-        plt.imshow(img)
-        plt.show()
-        logger.debug(mf)
+            # plt.imshow(mf[1].square_face)
+            # plt.show()
+            img = cv2.imread(file)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            for i in range(len(mf)):
+                r = mf[i].rectangle
+                cv2.rectangle(img, (r.left, r.top), (r.right, r.bottom), (255, 255, 130), 18)
+                # plt.imshow(mf[i].square_face)
+                # plt.show()
+            plt.imshow(img)
+            plt.show()
+            logger.debug(mf)
+
+        for root, dirs, files in os.walk('/mnt/NAS/Photos/Pictures_In_Progress/2019/'):
+            for f in files:
+                if not f.lower().endswith(('.jpg', '.jpeg')):
+                    continue
+                file = os.path.join(root, f)
+                doFile(file)
 
     # out = {'8': '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/DSC_4551.JPG', \
     #        '6': '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/20200225_170413.jpg', \
