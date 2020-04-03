@@ -77,7 +77,7 @@ def detect_pyramid(cv_image, parameters):
     # Cut the image in a 3x3 grid, using split_range. Then we will
     # expand these even cuts slightly on top of each other to catch
     # faces that are on the border between the grids. 
-    for cuts in [1, 3]: 
+    for cuts in [1, 2]: 
         # Get lists of left/right and top/bottom indices. 
         width_parts = split_range(width, cuts)
         height_parts = split_range(height, cuts)
@@ -248,7 +248,7 @@ if __name__ == "__main__":
             elif exif[orientation] == 8:
                 # Rotate left -- 90 
                 img = cv2.rotate(img_o, cv2.ROTATE_90_COUNTERCLOCKWISE)
-                
+
         else:
             img = img_o
     else:

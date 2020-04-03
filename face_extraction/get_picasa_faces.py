@@ -20,6 +20,7 @@ import cv2
 import face_recognition
 import io
 import matplotlib.pyplot as plt
+import numpy as np
 import re
 import xml
 import xmltodict
@@ -56,8 +57,18 @@ def Get_XMP_Faces(file, test=False):
     if file_data is None:
         return False, None
 
-    image = face_recognition.load_image_file(file)
-    # image = cv2.imread(file)
+    # image = face_recognition.load_image_file(file)
+
+    # # Open the image as a numpy image for face recognition. 
+    # try:
+    #     image = face_recognition.load_image_file(file)
+    # except Image.DecompressionBombError:
+    
+    if type(file) == type('string'):
+        image = cv2.imread(file)
+    elif type(file) == io.BytesIO:
+        file_bytes = np.asarray(bytearray(file.getvalue()), dtype=np.uint8)
+        image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
  
     # using the string of the file header,
     # locate the starting XMP XML Bag tag. It begins with 

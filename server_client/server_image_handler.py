@@ -50,7 +50,9 @@ sys.path.append(PARENT_DIR)
 
 
 from .server_ip_discover import ip_responder
-from flask import Flask, request, Response
+from flask import Flask, request, Response, session
+from flask_session import Session
+
 from PIL import Image, ExifTags
 import base64
 import cv2
@@ -59,6 +61,8 @@ import face_recognition
 import hashlib
 import io
 import json
+import time
+import matplotlib.pyplot as plt
 import jsonpickle
 import logging
 import numpy as np
@@ -67,6 +71,13 @@ import xmltodict
 
 # Initialize the Flask application
 app = Flask(__name__)
+# SESSION_TYPE = 'redis'
+app.config.from_object(__name__)
+# Session(app)
+# app.secret_key = os.urandom(24)
+# app.config.update(SECRET_KEY=os.urandom(24))
+# # sess = session()
+# app.config.from_object(__name__)
 try:
     import dlib
     using_cuda = dlib.DLIB_USE_CUDA
@@ -80,7 +91,6 @@ class CustomEncoder(json.JSONEncoder):
 
     def default(self, o):
         return {'__{}__'.format(o.__class__.__name__): o.__dict__}
-
 
 @app.route('/api/alive', methods=['GET', 'POST'])
 def alive():
@@ -98,6 +108,13 @@ def alive():
 @app.route('/api/face_extract', methods=['POST'])
 def test_fullfile():
     r = request
+
+    # print(session)
+    # if 'starttime' in session:
+    #     old_start = session['starttime']
+    #     print(f"Elapsed since last session is {time.time() - old_start}")
+    # session['starttime'] = time.time()
+    # print(session['starttime'])
 
     if not request.content_type == 'text':
         raise ValueError("Posted data must be text.")
@@ -128,11 +145,8 @@ def test_fullfile():
     # Shove that file data into a BytesIO object that can
     # be read using PIL. The key to getting string data back
     # from this IO object is to use getvalue, not read.
-    dt = base64.b64decode(file_data)
-    file = io.BytesIO(dt)
 
-    # Open the image as a numpy image for face recognition. 
-    image = face_recognition.load_image_file(file)
+    dt = base64.b64decode(file_data)
 
     # Retrieve the XMP faces. 
     file = io.BytesIO(dt)
@@ -141,7 +155,7 @@ def test_fullfile():
     parameter_file=os.path.join(PARENT_DIR, 'parameters.xml')
     with open(parameter_file, 'r') as fh:
         parameters = xmltodict.parse(fh.read())
-
+        
     print("extracting")
     matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(file, parameters)
 
@@ -195,5 +209,5 @@ if __name__ == "__main__":
     print(ip_thread)
     # Do NOT join the thread -- it will cause the while True
     # to block.
-
+    # sess.init_app(app)
     app.run(host="0.0.0.0", port=port)

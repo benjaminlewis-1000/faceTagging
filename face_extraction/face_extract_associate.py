@@ -34,7 +34,26 @@ def extract_faces_from_image(image_path, parameters):
 
     tiled_params = parameters['params']['tiled_detect_params']
 
-    npImage = face_recognition.load_image_file(image_path)
+    try:
+        npImage = face_recognition.load_image_file(image_path)
+    except Image.DecompressionBombError:
+
+        if type(image_path) == type('string'):
+            npImage = cv2.imread(image_path)
+        elif type(image_path) == io.BytesIO:
+            file_bytes = np.asarray(bytearray(image_path.getvalue()), dtype=np.uint8)
+            npImage = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+            this_pix = npImage.shape[0] * npImage.shape[1]
+            if this_pix < 5 * Image.MAX_IMAGE_PIXELS:
+                # No problem, just a really huge image. 
+                Image.MAX_IMAGE_PIXELS = this_pix + 1
+                npImage = face_recognition.load_image_file(image_path)
+            else:
+                # Could actually be a decompression bomb attack, IDK, and not
+                # just a huge image. 
+                return [], [], [], 0.1
+            # print(npImage.shape[0] * npImage.shape[1], Image.MAX_IMAGE_PIXELS)
+     
     initial_shape = npImage.shape
 
     ##########################################
@@ -665,6 +684,7 @@ if __name__ == "__main__":
     file = "/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-07-27 20.23.41.jpg"
     file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-11-23 15.07.24.jpg'
     file = '/mnt/NAS/Photos/Completed/Pictures_finished/Peru 2012/peru 025.JPG'
+
 
     parameter_file=os.path.join(PARENT_DIR, 'parameters.xml')
     with open(parameter_file, 'r') as fh:

@@ -221,9 +221,16 @@ if __name__ == "__main__":
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.48.10.jpg'
         # file = "/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-07-27 20.23.41.jpg" 
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-11-23 15.07.24.jpg'
+        file = '/mnt/NAS/Photos/Pictures_In_Progress/2018/Babymoon/Italy/panorama_finish/DSC_6097_stitch2.jpg'
 
         def doFile(file):
-            image = Image.open(file)
+
+            try:
+                image = Image.open(file)
+            except Image.DecompressionBombError:
+                Image.MAX_IMAGE_PIXELS = Image.MAX_IMAGE_PIXELS * 2
+                image = Image.open(file)
+
             for orientation in ExifTags.TAGS.keys():
                 if ExifTags.TAGS[orientation]=='Orientation':
                     break
@@ -258,12 +265,14 @@ if __name__ == "__main__":
             plt.show()
             logger.debug(mf)
 
-        for root, dirs, files in os.walk('/mnt/NAS/Photos/Pictures_In_Progress/2019/'):
-            for f in files:
-                if not f.lower().endswith(('.jpg', '.jpeg')):
-                    continue
-                file = os.path.join(root, f)
-                doFile(file)
+        doFile(file)
+
+        # for root, dirs, files in os.walk('/mnt/NAS/Photos/Pictures_In_Progress/2019/'):
+        #     for f in files:
+        #         if not f.lower().endswith(('.jpg', '.jpeg')):
+        #             continue
+        #         file = os.path.join(root, f)
+        #         doFile(file)
 
     # out = {'8': '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/DSC_4551.JPG', \
     #        '6': '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/20200225_170413.jpg', \
