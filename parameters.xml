@@ -2,9 +2,9 @@
 
 <params>
 	<tiled_detect_params>
-		<upsample>2</upsample>
+		<upsample>3</upsample>
 		<height>600</height>
-		<width>300</width>
+		<width>800</width>
 	</tiled_detect_params>
 	<ports>
 		<server_port_image_handle>5000</server_port_image_handle>

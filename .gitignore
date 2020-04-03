@@ -1,2 +1,4 @@
 *.JPG
+face_extraction/__pycache__/*
+*.pyc
 *.pkl

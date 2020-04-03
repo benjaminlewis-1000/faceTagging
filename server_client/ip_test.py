@@ -12,10 +12,9 @@ import ipaddress
 PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class server_finder():
-    def __init__(self, logger=None):
+    def __init__(self):
 
         # self.server_ip = None
-        self.logger = logger
         with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
             config = xmltodict.parse(p.read())
 
@@ -24,10 +23,7 @@ class server_finder():
 
         self.get_my_ip()
 
-        if self.logger is not None:
-            self.logger.debug(f"My ip is {self.my_ip}")
-        else:
-            print(f"My ip is {self.my_ip}")
+        print(f"My ip is {self.my_ip}")
         self.my_subnet = re.match('(\d+\.\d+\.\d+\.)\d+', self.my_ip).group(1)
 
         self.find_external_server()
@@ -69,9 +65,9 @@ class server_finder():
             # client.setblocking(0)
             # sleep(1)
             # my_subnet = ipaddress.ip_network(my_ip + '/255.255.255.0', strict)
-            for i in range(255):
+            for i in range(147, 148):
                 ip_test = f'{self.my_subnet}{i+1}'
-                # print(ip_test)
+                print(ip_test)
                 try:
                     # Broadcast a message. 127.0.0.1 should be '<broadcast>'.
                     tmp = client.sendto(data_return, (ip_test, self.port_ip_disc))
