@@ -27,7 +27,7 @@ class server_finder():
         if self.logger is not None:
             self.logger.debug(f"My ip is {self.my_ip}")
         else:
-            print(f"My ip is {self.my_ip}")
+            print(f"printing: My ip is {self.my_ip}")
         self.my_subnet = re.match('(\d+\.\d+\.\d+\.)\d+', self.my_ip).group(1)
 
         self.find_external_server()
@@ -64,7 +64,13 @@ class server_finder():
 
         def find_ip(timeout, sleeptime):
             # Get subnet of ip
-            print(f"Trying timeout value {timeout} with delay {sleeptime}.")
+
+            msg = f"Trying timeout value {timeout} with delay {sleeptime}."
+            if self.logger is not None:
+                self.logger.debug(msg)
+            else:
+                print(msg)
+                
             client.settimeout(timeout)
             # client.setblocking(0)
             # sleep(1)
