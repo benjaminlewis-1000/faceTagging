@@ -109,13 +109,15 @@ def Get_XMP_Faces(file, test=False):
                     if 'rdf:Description' in person_dict.keys():
                         person_data = person_dict['rdf:Description']
                         # assert '@mwg-rs:Name' in person_data.keys()
-                        assert '@mwg-rs:Type' in person_data.keys()
-                        assert 'mwg-rs:Area' in person_data.keys()
                         if '@mwg-rs:Name' not in person_data.keys():
                             return
                         else:
                             name = person_data['@mwg-rs:Name']
-                        assert person_data['@mwg-rs:Type'] == 'Face'
+                        if '@mwg-rs:Type' not in person_data.keys():
+                            return
+                        else:
+                            assert person_data['@mwg-rs:Type'] == 'Face'
+                        assert 'mwg-rs:Area' in person_data.keys()
                         area = person_data['mwg-rs:Area']
                         area_x = area['@stArea:x']
                         area_y = area['@stArea:y']

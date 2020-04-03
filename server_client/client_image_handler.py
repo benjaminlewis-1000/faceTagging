@@ -208,22 +208,24 @@ if __name__ == "__main__":
     if 'IN_DOCKER' in os.environ.keys() and os.environ['IN_DOCKER']:
         mf = face_extract_client(os.path.join('/test_imgs_filepopulate/', 'has_face_tags.jpg'), client_ip)
     else:
-        file = '/mnt/NAS/Photos/Pictures_In_Progress/2020/Erica Post-mission visit/DSC_4551.JPG' # 8 exif, no tagged faces
-        # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1245.JPG' # 1 exif, tagged faces
-        # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-16 13.01.55.jpg' # No exif, tagged face
-        # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.31.26.jpg' # No exif or tags
-        # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1224.JPG' # 1 exif data, tagged faces
-        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1174.JPG' # 1 exif data, tagged faces
-        # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Nathaniel Fun/DSC_2715.JPG' # 8 exif data, tagged faces
-        # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-16 09.01.41.jpg' # 6 exif, tagged face
-        # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-15 20.05.38-1.jpg' # 3 exif, tagged face
-        # file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-07-06 11.54.44.jpg' # 6 exif data, no tagged faces
-        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/DSC_1241.JPG'
-        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.48.10.jpg'
-        # file = "/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-07-27 20.23.41.jpg" 
-        file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-11-23 15.07.24.jpg'
-        file = '/mnt/NAS/Photos/Pictures_In_Progress/2018/Babymoon/Italy/panorama_finish/DSC_6097_stitch2.jpg'
-        file = '/mnt/NAS/Photos/Pictures_In_Progress/Adam Mission/Adam mission book/portrait/100_4352.JPG'
+        prefix = '/mnt/NAS/Photos/'
+        file = prefix + 'Pictures_In_Progress/2020/Erica Post-mission visit/DSC_4551.JPG' # 8 exif, no tagged faces
+        # file = prefix + '/Pictures_In_Progress/2019/Baltimore Trip/DSC_1245.JPG' # 1 exif, tagged faces
+        # file = prefix + '/Pictures_In_Progress/2019/Baltimore Trip/2019-04-16 13.01.55.jpg' # No exif, tagged face
+        # file = prefix + '/Pictures_In_Progress/2019/Family Texts/2019-09-04 10.31.26.jpg' # No exif or tags
+        # file = prefix + '/Pictures_In_Progress/2019/Baltimore Trip/DSC_1224.JPG' # 1 exif data, tagged faces
+        file = prefix + 'Pictures_In_Progress/2019/Baltimore Trip/DSC_1174.JPG' # 1 exif data, tagged faces
+        # file = prefix + '/Pictures_In_Progress/2019/Nathaniel Fun/DSC_2715.JPG' # 8 exif data, tagged faces
+        # file = prefix + '/Pictures_In_Progress/2019/Baltimore Trip/2019-04-16 09.01.41.jpg' # 6 exif, tagged face
+        # file = prefix + '/Pictures_In_Progress/2019/Baltimore Trip/2019-04-15 20.05.38-1.jpg' # 3 exif, tagged face
+        # file = prefix + '/Pictures_In_Progress/2019/Family Texts/2019-07-06 11.54.44.jpg' # 6 exif data, no tagged faces
+        file = prefix + 'Pictures_In_Progress/2019/Baltimore Trip/DSC_1241.JPG'
+        file = prefix + 'Pictures_In_Progress/2019/Family Texts/2019-09-04 10.48.10.jpg'
+        # file = prefix + '/Pictures_In_Progress/2019/Life/2019-07-27 20.23.41.jpg" 
+        file = prefix + 'Pictures_In_Progress/2019/Life/2019-11-23 15.07.24.jpg'
+        file = prefix + 'Pictures_In_Progress/2018/Babymoon/Italy/panorama_finish/DSC_6097_stitch2.jpg'
+        file = prefix + 'Pictures_In_Progress/Adam Mission/Adam mission book/portrait/100_4352.JPG'
+        file = prefix + 'Pictures_In_Progress/Adam Mission/Adam mission book/landscape/Lewis Reunion 2012 (34).JPG'
 
         def doFile(file):
 
