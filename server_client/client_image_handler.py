@@ -222,6 +222,7 @@ if __name__ == "__main__":
         # file = "/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-07-27 20.23.41.jpg" 
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-11-23 15.07.24.jpg'
         file = '/mnt/NAS/Photos/Pictures_In_Progress/2018/Babymoon/Italy/panorama_finish/DSC_6097_stitch2.jpg'
+        file = '/mnt/NAS/Photos/Pictures_In_Progress/Adam Mission/Adam mission book/portrait/100_4352.JPG'
 
         def doFile(file):
 

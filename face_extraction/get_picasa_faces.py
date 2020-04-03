@@ -70,6 +70,9 @@ def Get_XMP_Faces(file, test=False):
         file_bytes = np.asarray(bytearray(file.getvalue()), dtype=np.uint8)
         image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
  
+    # X and Y are locations in the middle of the face. 
+    img_height, img_width, _ = image.shape
+
     # using the string of the file header,
     # locate the starting XMP XML Bag tag. It begins with 
     # the XML tag '<rdf:Bag'. 
@@ -103,21 +106,35 @@ def Get_XMP_Faces(file, test=False):
                 # of the top-left point, and the width and 
                 # height of the face location. 
                 def get_person_data(person_dict):
-                    person_data = person_dict['rdf:Description']
-                    # assert '@mwg-rs:Name' in person_data.keys()
-                    assert '@mwg-rs:Type' in person_data.keys()
-                    assert 'mwg-rs:Area' in person_data.keys()
-                    if '@mwg-rs:Name' not in person_data.keys():
-                        return
+                    if 'rdf:Description' in person_dict.keys():
+                        person_data = person_dict['rdf:Description']
+                        # assert '@mwg-rs:Name' in person_data.keys()
+                        assert '@mwg-rs:Type' in person_data.keys()
+                        assert 'mwg-rs:Area' in person_data.keys()
+                        if '@mwg-rs:Name' not in person_data.keys():
+                            return
+                        else:
+                            name = person_data['@mwg-rs:Name']
+                        assert person_data['@mwg-rs:Type'] == 'Face'
+                        area = person_data['mwg-rs:Area']
+                        area_x = area['@stArea:x']
+                        area_y = area['@stArea:y']
+                        area_w = area['@stArea:w']
+                        area_h = area['@stArea:h']
+                        return {'Name': name, 'Area_x': area_x, 'Area_y': area_y, 'Area_w': area_w, 'Area_h': area_h}
+                    elif '@MPReg:Rectangle' in person_dict.keys():
+                        if '@MPReg:PersonDisplayName' not in person_dict.keys():
+                            return
+                        name = person_dict['@MPReg:PersonDisplayName']
+                        rect = person_dict['@MPReg:Rectangle']
+                        rect = rect.split(',')
+                        area_x = rect[0]
+                        area_y = rect[1]
+                        area_w = rect[2]
+                        area_h = rect[3]
+                        return {'Name': name, 'Area_x': area_x, 'Area_y': area_y, 'Area_w': area_w, 'Area_h': area_h}
                     else:
-                        name = person_data['@mwg-rs:Name']
-                    assert person_data['@mwg-rs:Type'] == 'Face'
-                    area = person_data['mwg-rs:Area']
-                    area_x = area['@stArea:x']
-                    area_y = area['@stArea:y']
-                    area_w = area['@stArea:w']
-                    area_h = area['@stArea:h']
-                    return {'Name': name, 'Area_x': area_x, 'Area_y': area_y, 'Area_w': area_w, 'Area_h': area_h}
+                        raise ValueError("Unknown person rectangle format")
 
                 # Two options, both have the person data. 
                 if isinstance(bag_data, collections.OrderedDict):
@@ -133,8 +150,6 @@ def Get_XMP_Faces(file, test=False):
         except xml.parsers.expat.ExpatError:
             pass
 
-    # X and Y are locations in the middle of the face. 
-    img_height, img_width, _ = image.shape
 
     # Reverse parsing. We process the list of persons
     # *again* to turn the tags into Rectangle objects
@@ -170,7 +185,7 @@ def Get_XMP_Faces(file, test=False):
 
         cv2.rectangle(image, (left, top), (right, bottom), (255, 0, 0), 5)
 
-    if test:
+    if False:
         plt.imshow(image)
         plt.show()
 
