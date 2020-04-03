@@ -30,14 +30,6 @@ from PIL import Image, ExifTags
 # reload(logging)
 # logging.basicConfig(level=logging.DEBUG)
 # logging.debug('Helo!')
-logger = logging.getLogger('my.logger')
-logger.setLevel(logging.DEBUG)
-
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-logger.addHandler(ch)
-coloredlogs.install()
-logger.debug("Hello!")
 # logger.basicConfig(level=logging.DEBUG)
 # logging.setLevel(logging.DEBUG)
 
@@ -100,7 +92,16 @@ def image_for_network(filename):
 
     return payload, headers
 
-def face_extract_client(filename, server_ip_finder):
+def face_extract_client(filename, server_ip_finder, logger=None):
+
+    if logger is None:
+        logger = logging.getLogger('__main__')
+        logger.setLevel(logging.DEBUG)
+
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+        logger.addHandler(ch)
+        coloredlogs.install()
 
     server_there = server_ip_finder.check_ip()
     if server_there:
