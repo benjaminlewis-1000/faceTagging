@@ -5,3 +5,6 @@ xmltodict
 scipy
 matplotlib
 gunicorn
+flask_session
+jsonpickle
+

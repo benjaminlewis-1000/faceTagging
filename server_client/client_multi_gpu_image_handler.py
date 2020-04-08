@@ -21,7 +21,7 @@ import cv2
 import hashlib
 import face_extraction
 import matplotlib.pyplot as plt
-import client_ip_discover # import find_external_server
+import client_multi_ip_discover # import find_external_server
 import logging
 import coloredlogs
 from PIL import Image, ExifTags
@@ -92,7 +92,11 @@ def image_for_network(filename):
 
     return payload, headers
 
-def face_extract_client(filename, server_ip_finder, logger=None):
+def face_extract_client(filename, server_ip_finder, ip_idx = None, logger=None):
+    if ip_idx is None:
+        ip_idx = 0
+
+
 
     if logger is None:
         logger = logging.getLogger('__main__')
@@ -103,9 +107,9 @@ def face_extract_client(filename, server_ip_finder, logger=None):
         logger.addHandler(ch)
         coloredlogs.install()
 
-    server_there = server_ip_finder.check_ip()
+    server_there = server_ip_finder.check_ip(ip_idx)
     if server_there:
-        ext_ip = server_ip_finder.server_ip
+        ext_ip = server_ip_finder.server_ips[ip_idx]
     else:
         server_ip_finder.find_external_server()
         ext_ip = None
@@ -204,9 +208,9 @@ def face_extract_client(filename, server_ip_finder, logger=None):
 if __name__ == "__main__":
     # mf = face_extract_client('my_pic.jpg')
 
-    client_ip = client_ip_discover.server_finder()
+    client_ip = client_multi_ip_discover.server_finder()
     if 'IN_DOCKER' in os.environ.keys() and os.environ['IN_DOCKER']:
-        mf = face_extract_client(os.path.join('/test_imgs_filepopulate/', 'has_face_tags.jpg'), client_ip)
+        mf = face_extract_client(os.path.join('/test_imgs_filepopulate/', 'has_face_tags.jpg'), client_ip, ip_idx = 1)
     else:
         prefix = '/mnt/NAS/Photos/'
         file = prefix + 'Pictures_In_Progress/2020/Erica Post-mission visit/DSC_4551.JPG' # 8 exif, no tagged faces
@@ -260,7 +264,8 @@ if __name__ == "__main__":
             print(file)
             # mf = face_extract_client(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), client_ip)
             # mf = face_extract_client('/home/benjamin/Desktop/DSC_1209.JPG', client_ip)
-            mf = face_extract_client(file, client_ip)
+            mf = face_extract_client(file, client_ip, ip_idx = 0)
+            mf = face_extract_client(file, client_ip, ip_idx = 1)
             
             # plt.imshow(mf[0].square_face)
             # plt.show()
@@ -276,6 +281,7 @@ if __name__ == "__main__":
             plt.imshow(img)
             plt.show()
             logger.debug(mf)
+            print(len(mf))
 
         doFile(file)
 

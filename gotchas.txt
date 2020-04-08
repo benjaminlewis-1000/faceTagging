@@ -1,0 +1,9 @@
+Installing DLIB with CUDA can be tricky. Here are some helpful tips:
+
+-This page gives basic commands. http://leadtosilverlining.blogspot.com/2018/08/build-and-install-dlib-with-cuda.html
+- You need to add a -DCMAKE_PREFIX_PATH that points to your cudnn libraries
+- You will need to add CUDA to your path:  export PATH=/usr/local/cuda/bin:"$PATH" (preferably in .bashrc)
+- Same thing when running python setup.py -- add to the DCMAKE_PREFIX_PATH. 
+- For example: 
+
+sudo python3 setup.py install --set CMAKE_PREFIX_PATH=/usr/local/cuda  --set CUDA_HOST_COMPILER=/usr/bin/gcc-6  --clean

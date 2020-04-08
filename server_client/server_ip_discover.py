@@ -49,7 +49,7 @@ def ip_responder():
         print("received message: %s"%data)
         # Respond with our own information to the
         # IP and port that was sent to us.
-        print("Returning to: ", return_ip, return_port)
+        print("Returning to: ", return_ip, return_port, data_return)
         server.sendto(data_return, (return_ip, return_port))
 
 if __name__ == '__main__':

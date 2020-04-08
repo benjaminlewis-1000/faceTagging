@@ -75,9 +75,10 @@ class server_finder():
             # client.setblocking(0)
             # sleep(1)
             # my_subnet = ipaddress.ip_network(my_ip + '/255.255.255.0', strict)
+            valid_ips = []
             for i in range(255):
                 ip_test = f'{self.my_subnet}{i+1}'
-                print(ip_test) 
+                # print(ip_test)    
                 try:
                     # Broadcast a message. 127.0.0.1 should be '<broadcast>'.
                     tmp = client.sendto(data_return, (ip_test, self.port_ip_disc))
@@ -88,30 +89,44 @@ class server_finder():
                     return_ip = data['ip_addr']
                     return_found = True
                     print(data)
-                    return return_ip, return_port, return_found
+                    # return return_ip, return_port, return_found
+                    valid_ips.append((return_ip, return_port))
                 except socket.timeout:
                     pass
+
 
                 # Needs a small time to... do something, not sure. I imagine
                 # that it's flushing the queue from non-received data or something.
                 if i % 25 == 0 and i > 0:
                     sleep(1000 * timeout)
+            return valid_ips
             return None, None, None
         # return_ip, return_port, return_found = find_ip(0.0001, 0.1)
         # Try with a slower timeout
-        for delay in [0.0001, 0.001, 0.005]:
-            if not return_found:
+        ret_data = []
+        for delay in [0.0001, 0.001]:
+            if len(ret_data) == 0:
                 # print(delay)
-                return_ip, return_port, return_found = find_ip(delay, delay * 500)
+                # return_ip, return_port, return_found = 
+                ret_data = find_ip(delay, delay * 500)
+                print(ret_data)
                 # print(return_ip, return_found)
-        if return_found:
-            self.server_ip = return_ip
+        if len(ret_data):
+            ret_data = list(set(ret_data))
+            print(ret_data)
+            self.server_ips = [x[0] for x in ret_data]
         else:
-            self.server_ip = None
+            self.server_ips = None
 
-    def check_ip(self):
+    def check_ip(self, index=None):
 
-        if self.server_ip is None:
+        if index is not None:
+            assert index in list(range(len(self.server_ips)))
+            ips_check = [self.server_ips[index]]
+        else:
+            ips_check = self.server_ips
+
+        if self.server_ips is None:
             return False
 
         client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -121,25 +136,26 @@ class server_finder():
         data = {'return_port': self.client_port, 'ip_addr': self.my_ip}
         data_return = bytes(json.dumps(data).encode('utf-8'))
 
-        return_found = False
+        return_found = []
 
-        try:
-            client.settimeout(1)
-            tmp = client.sendto(data_return, (self.server_ip, self.port_ip_disc))
-            data, addr = client.recvfrom(1024)
-            data = json.loads(data)
-            return_port = int(data['return_port'])
-            return_ip = data['ip_addr']
-            return_found = True
-        except socket.timeout:
-            return_found = False
+        for s in ips_check:
+            try:
+                client.settimeout(1)
+                tmp = client.sendto(data_return, (s, self.port_ip_disc))
+                data, addr = client.recvfrom(1024)
+                data = json.loads(data)
+                return_port = int(data['return_port'])
+                return_ip = data['ip_addr']
+                return_found.append(True)
+            except socket.timeout:
+                return_found.append(False)
 
         return return_found
 
 if __name__ == "__main__":
     s = server_finder()
-    print("Found: ", s.server_ip)
-    print("Still there: ", s.check_ip())
-    print("Still there: ", s.check_ip())
+    print("Found: ", s.server_ips)
+    print("Still there: ", s.check_ip(0))
+    print("Still there: ", s.check_ip(1))
     print("Still there: ", s.check_ip())
     print("Still there: ", s.check_ip())
