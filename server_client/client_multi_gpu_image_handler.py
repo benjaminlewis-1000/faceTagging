@@ -92,11 +92,9 @@ def image_for_network(filename):
 
     return payload, headers
 
-def face_extract_client(filename, server_ip_finder, ip_idx = None, logger=None):
+def face_extract_client(filename, server_ip_finder, ip_idx = None, logger=None, ip_checked=False):
     if ip_idx is None:
         ip_idx = 0
-
-
 
     if logger is None:
         logger = logging.getLogger('__main__')
@@ -107,7 +105,11 @@ def face_extract_client(filename, server_ip_finder, ip_idx = None, logger=None):
         logger.addHandler(ch)
         coloredlogs.install()
 
-    server_there = server_ip_finder.check_ip(ip_idx)
+    if ip_checked:
+        server_there = True
+    else:
+        server_there = server_ip_finder.check_ip(ip_idx)
+        
     if server_there:
         ext_ip = server_ip_finder.server_ips[ip_idx]
     else:
@@ -230,6 +232,7 @@ if __name__ == "__main__":
         file = prefix + 'Pictures_In_Progress/2018/Babymoon/Italy/panorama_finish/DSC_6097_stitch2.jpg'
         file = prefix + 'Pictures_In_Progress/Adam Mission/Adam mission book/portrait/100_4352.JPG'
         file = prefix + 'Pictures_In_Progress/Adam Mission/Adam mission book/landscape/Lewis Reunion 2012 (34).JPG'
+        file = prefix + ''
 
         logger = logging.getLogger('__main__')
         logger.setLevel(logging.DEBUG)

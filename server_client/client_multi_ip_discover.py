@@ -5,6 +5,7 @@ import os
 import re
 from time import sleep 
 import ipaddress
+import random
 
 # Source for getting my IP: https://stackoverflow.com/a/1267524/3158519
 # (Unrolled the single liner)
@@ -109,14 +110,13 @@ class server_finder():
                 # print(delay)
                 # return_ip, return_port, return_found = 
                 ret_data = find_ip(delay, delay * 500)
-                print(ret_data)
                 # print(return_ip, return_found)
         if len(ret_data):
             ret_data = list(set(ret_data))
-            print(ret_data)
             self.server_ips = [x[0] for x in ret_data]
         else:
             self.server_ips = None
+
 
     def check_ip(self, index=None):
 
@@ -132,6 +132,7 @@ class server_finder():
         client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 
         client.bind(("0.0.0.0", self.client_port)) # This is my port
+
         message = bytes(self.my_ip.encode('utf-8'))
         data = {'return_port': self.client_port, 'ip_addr': self.my_ip}
         data_return = bytes(json.dumps(data).encode('utf-8'))
@@ -151,6 +152,9 @@ class server_finder():
                 return_found.append(False)
 
         return return_found
+
+    def __len__(self):
+        return len(self.server_ips)
 
 if __name__ == "__main__":
     s = server_finder()
