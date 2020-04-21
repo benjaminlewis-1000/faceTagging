@@ -21,7 +21,11 @@ class server_finder():
             config = xmltodict.parse(p.read())
 
         self.port_ip_disc = int(config['params']['ports']['server_port_ip_disc'])
-        self.client_port = int(config['params']['ports']['client_return_port'])
+        if 'CLIENT_FACE_PORT' in os.environ.keys():
+            self.client_port = int(os.environ['CLIENT_FACE_PORT'])
+        else:
+            self.client_port = int(config['params']['ports']['client_return_port'])
+        print(self.client_port)
 
         self.get_my_ip()
 
