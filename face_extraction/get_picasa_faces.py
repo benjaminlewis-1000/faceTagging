@@ -96,7 +96,6 @@ def Get_XMP_Faces(file, test=False):
     for bag in bag_tags:
         try:
             bag_data = xmltodict.parse(bag)
-            print("bag data: ", bag_data)
             if 'rdf:Bag' in bag_data.keys() and 'rdf:li' in bag_data['rdf:Bag'].keys():
                 # These are the sub-tags that should be there. 
                 bag_data = bag_data['rdf:Bag']['rdf:li']
@@ -107,11 +106,8 @@ def Get_XMP_Faces(file, test=False):
                 # of the top-left point, and the width and 
                 # height of the face location. 
                 def get_person_data(person_dict):
-                    print(person_dict.keys() )
                     if 'rdf:Description' in person_dict.keys():
-                        print("Description")
                         person_data = person_dict['rdf:Description']
-                        print(person_data, person_data.keys())
                         # assert '@mwg-rs:Name' in person_data.keys()
                         if 'MPReg:Rectangle' in person_data.keys(): 
                             if 'MPReg:PersonDisplayName' not in person_data.keys():
@@ -141,7 +137,6 @@ def Get_XMP_Faces(file, test=False):
                         area_h = area['@stArea:h']
                         return {'Name': name, 'Area_x': area_x, 'Area_y': area_y, 'Area_w': area_w, 'Area_h': area_h}
                     elif '@MPReg:Rectangle' in person_dict.keys():
-                        print(person_dict)
                         if '@MPReg:PersonDisplayName' not in person_dict.keys():
                             return
                         name = person_dict['@MPReg:PersonDisplayName']
