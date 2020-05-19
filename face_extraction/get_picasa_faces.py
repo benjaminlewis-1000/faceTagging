@@ -96,6 +96,7 @@ def Get_XMP_Faces(file, test=False):
     for bag in bag_tags:
         try:
             bag_data = xmltodict.parse(bag)
+            print("bag data: ", bag_data)
             if 'rdf:Bag' in bag_data.keys() and 'rdf:li' in bag_data['rdf:Bag'].keys():
                 # These are the sub-tags that should be there. 
                 bag_data = bag_data['rdf:Bag']['rdf:li']
@@ -106,9 +107,24 @@ def Get_XMP_Faces(file, test=False):
                 # of the top-left point, and the width and 
                 # height of the face location. 
                 def get_person_data(person_dict):
+                    print(person_dict.keys() )
                     if 'rdf:Description' in person_dict.keys():
+                        print("Description")
                         person_data = person_dict['rdf:Description']
+                        print(person_data, person_data.keys())
                         # assert '@mwg-rs:Name' in person_data.keys()
+                        if 'MPReg:Rectangle' in person_data.keys(): 
+                            if 'MPReg:PersonDisplayName' not in person_data.keys():
+                                return
+                            name = person_data['MPReg:PersonDisplayName']['#text']
+                            rect = person_data['MPReg:Rectangle']['#text']
+                            rect = rect.split(',')
+                            area_x = rect[0]
+                            area_y = rect[1]
+                            area_w = rect[2]
+                            area_h = rect[3]
+                            return {'Name': name, 'Area_x': area_x, 'Area_y': area_y, 'Area_w': area_w, 'Area_h': area_h}
+
                         if '@mwg-rs:Name' not in person_data.keys():
                             return
                         else:
@@ -125,6 +141,7 @@ def Get_XMP_Faces(file, test=False):
                         area_h = area['@stArea:h']
                         return {'Name': name, 'Area_x': area_x, 'Area_y': area_y, 'Area_w': area_w, 'Area_h': area_h}
                     elif '@MPReg:Rectangle' in person_dict.keys():
+                        print(person_dict)
                         if '@MPReg:PersonDisplayName' not in person_dict.keys():
                             return
                         name = person_dict['@MPReg:PersonDisplayName']
@@ -202,4 +219,5 @@ def Get_XMP_Faces(file, test=False):
 if __name__ == "__main__":
     print(Get_XMP_Faces(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), True))
     file = '/mnt/NAS/Photos/Completed/Pictures_finished/Mission/estancia/food/IMG_0054.JPG'
+    file = '/mnt/NAS/Photos/Pictures_In_Progress/Adam Mission/Adam mission book/landscape/Lewis Reunion 2012 (34).JPG'
     print(Get_XMP_Faces(file, True))
