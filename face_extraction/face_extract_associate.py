@@ -75,7 +75,9 @@ def extract_faces_from_image(image_path, parameters, tagged_faces):
     else:
         exif = {}
 
+
     if orientation in exif.keys():
+        print("EXIF: ", exif[orientation])
         if exif[orientation] == 3:
             # Rotate 180
             npImage = cv2.rotate(npImage, cv2.ROTATE_180)

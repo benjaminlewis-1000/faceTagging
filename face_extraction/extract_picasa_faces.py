@@ -3,7 +3,7 @@ if __name__ == "__main__":
     from rectangle import Rectangle 
 else:
     from .rectangle import Rectangle 
-from PIL import Image
+from PIL import Image, ExifTags
 from time import sleep
 import binascii
 import collections
@@ -20,6 +20,7 @@ import xmltodict
 from libxmp.utils import file_to_dict
 from libxmp import XMPFiles, consts
 from tempfile import NamedTemporaryFile
+
 
 
 def extractFaces(file):
@@ -177,9 +178,29 @@ def Get_XMP_Faces(file, test=False):
     elif type(file) == io.BytesIO:
         file_bytes = np.asarray(bytearray(file.getvalue()), dtype=np.uint8)
         image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
- 
+
+    image_exif = Image.open(file)
+
+    for orientation in ExifTags.TAGS.keys():
+        if ExifTags.TAGS[orientation]=='Orientation':
+            break
+
+    if 'items' in dir(image_exif._getexif()):
+        exif=dict(image_exif._getexif().items())
+    else:
+        exif = {}
+
+
+    if orientation in exif.keys():
+        if exif[orientation] in [6, 8]:
+            img_width, img_height, _ = image.shape
+        else:
+            img_height, img_width, _ = image.shape
+    plt.imshow(image)
+    plt.show()
     # X and Y are locations in the middle of the face. 
-    img_height, img_width, _ = image.shape
+
+    print(img_height, img_width)
 
     # Reverse parsing. We process the list of persons
     # *again* to turn the tags into Rectangle objects
@@ -189,6 +210,7 @@ def Get_XMP_Faces(file, test=False):
     for p_num in range(len(persons)-1, -1, -1):
         left = float(persons[p_num]['Area_x'])
         top = float(persons[p_num]['Area_y']) 
+        # print(left, top)
         height = float(persons[p_num]['Area_h']) 
         width = float(persons[p_num]['Area_w'])         
 
@@ -225,6 +247,7 @@ if __name__ == "__main__":
     file = '/mnt/NAS/Photos/tmp_pic/DSC_1303.JPG'
     file = '/mnt/NAS/Photos/Pictures_In_Progress/Adam Mission/Adam mission book/landscape/Lewis Reunion 2012 (34).JPG'
     file = '/mnt/NAS/Photos/Completed/Pictures_finished/2016/Utah/baker_reunion (3).jpg'
+    file = '/mnt/NAS/Photos/Completed/Pictures_finished/Family Pictures/2017/Mom Phone/1479419708717.jpg'
 
     d = Get_XMP_Faces(file)
     print(d)

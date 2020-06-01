@@ -230,6 +230,7 @@ if __name__ == "__main__":
 #        file = prefix + 'Completed/Pictures_finished/2017/Family Texts/meagan_mission_return (6).jpg'
 #        file = prefix + 'Completed/Pictures_finished/2017/Ben Work Trips/rya.jpg'
         file = '/mnt/NAS/Photos/Completed/Pictures_finished/2016/Utah/baker_reunion (3).jpg'
+        file = prefix + 'Completed/Pictures_finished/Family Pictures/2017/Mom Phone/1479419708717.jpg'
 
         logger = logging.getLogger('__main__')
         logger.setLevel(logging.DEBUG)
@@ -274,6 +275,8 @@ if __name__ == "__main__":
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             for i in range(len(mf)):
                 r = mf[i].rectangle
+                # if mf[i].name is not None:
+                    # print(r)
                 cv2.rectangle(img, (r.left, r.top), (r.right, r.bottom), (255, 255, 130), 18)
                 # plt.imshow(mf[i].square_face)
                 # plt.show()
