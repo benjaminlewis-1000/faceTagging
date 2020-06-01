@@ -91,6 +91,7 @@ def detect_pyramid(cv_image, parameters):
 
                 # Get the top/bottom, left/right of each
                 # grid. 
+                print("asdf")
                 left_edge_0 = width_parts[leftIdx]
                 right_edge_0 = width_parts[leftIdx + 1]
                 top_edge_0 = height_parts[topIdx]

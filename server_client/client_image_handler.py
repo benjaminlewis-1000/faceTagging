@@ -181,6 +181,7 @@ def face_extract_client(filename, server_ip_finder, logger=None):
             logger.debug('GPU server **was** used to extract faces from {}'.format(filename))
 
         except requests.exceptions.ConnectionError as ce:
+            print(ce)
             logger.error('GPU server could not connect in face extraction.')
             if not dlib.DLIB_USE_CUDA:
                 raise ce

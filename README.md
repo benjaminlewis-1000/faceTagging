@@ -12,7 +12,8 @@ Assumptions: The server will run on port 5000. This port is defined in parameter
 - Use ufw (universal firewall) to enable communication on port 5000:
     `sudo ufw enable`
     `sudo ufw allow 5000`
-- Find the path to your gunicorn installation, using `which gunicorn`. Given that path, put the following in your crontab: 
-    `@reboot (<WHICH_GUNICORN_OUTPUT> -b 0.0.0.0:5000 -w 1 --chdir <PATH_TO_THIS_GIT_REPO> server_client.server_image_handler:app ) &`
+- Find the path to your gunicorn installation, using `which gunicorn`. Given that path, put the following in your user space crontab: 
+    `@reboot (<WHICH_GUNICORN_OUTPUT> -b 0.0.0.0:5000 -w 1 --chdir <PATH_TO_THIS_GIT_REPO> server_client.server_image_handler:app --timeout 120 ) &`
+    (The timeout option is to allow the worker ample time to process the image)
 - Set the server_ip file to run on boot in crontab. The sleep is to enable the networking to iron itself out. 
     `@reboot (sleep 15; /usr/bin/python3 <PATH_TO_THIS_GIT_REPO>/server_client/server_ip_discover.py) &`

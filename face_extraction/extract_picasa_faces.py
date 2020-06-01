@@ -43,11 +43,11 @@ def extractFaces(file):
     # Keeps us from finding crazy coincidences
     # in the file. I mean, it can still happen,
     # but less likely.
-    header = re.match(b'.*?\xff\xc0', data, re.DOTALL).group(0)
-    data = re.findall('<x:xmpmeta.*</x:xmpmeta>', str(data))
+#    header = re.match(b'.*?\xff\xc0', data, re.DOTALL).group(0)
+    data = re.findall('<x:xmpmeta.*?</x:xmpmeta>', str(data))
     # header_xmp = re.findall('<x:xmpmeta.*</x:xmpmeta>', str(header))
     # assert len(data) == len(header_xmp)
-    assert len(header) > 0
+#    assert len(header) > 0
     if len(data) == 0:
         return []
     else:
