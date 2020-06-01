@@ -170,6 +170,7 @@ def extractFaces(file):
 def Get_XMP_Faces(file, test=False):
 
     persons = extractFaces(file)
+    print(persons)
 
     if type(file) == type('string'):
         image = cv2.imread(file)
@@ -214,6 +215,7 @@ def Get_XMP_Faces(file, test=False):
         persons[p_num].pop('Area_w')
   
     #  if we found something, return tag information
+    print("At the end: ", persons)
     return True, persons
 
 
@@ -222,6 +224,7 @@ if __name__ == "__main__":
 
     file = '/mnt/NAS/Photos/tmp_pic/DSC_1303.JPG'
     file = '/mnt/NAS/Photos/Pictures_In_Progress/Adam Mission/Adam mission book/landscape/Lewis Reunion 2012 (34).JPG'
+    file = '/mnt/NAS/Photos/Completed/Pictures_finished/2016/Utah/baker_reunion (3).jpg'
 
     d = Get_XMP_Faces(file)
     print(d)

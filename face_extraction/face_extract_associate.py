@@ -24,7 +24,7 @@ import random
 import time
 import xmltodict
 
-def extract_faces_from_image(image_path, parameters):
+def extract_faces_from_image(image_path, parameters, tagged_faces):
     assert isinstance(image_path, str) or isinstance(image_path, io.BytesIO)
     if isinstance(image_path, str):
         assert os.path.isfile(image_path)
@@ -59,7 +59,8 @@ def extract_faces_from_image(image_path, parameters):
     ##########################################
     # Get the faces from XMP data, then detect faces with deep neural network
     # If we have rotated the image, we need to rotate the tagged faces as well.
-    success_faces, tagged_faces = face_extraction.Get_XMP_Faces(image_path)
+    # success_faces, tagged_faces = face_extraction.Get_XMP_Faces(image_path)
+    print("Tag: ", tagged_faces)
 
     ##########################################
     # Rotate the image based on metadata 
@@ -94,8 +95,6 @@ def extract_faces_from_image(image_path, parameters):
     pristine_image = copy.deepcopy(npImage) 
 
     ml_detected_faces, elapsed_time = face_extraction.detect_pyramid(npImage, tiled_params)
-
-    assert success_faces, 'Picasa face extraction failed.'
 
     matched_faces = associate_detections_and_tags(npImage, pristine_image, ml_detected_faces, tagged_faces, disp_photo=False, test=False)
 

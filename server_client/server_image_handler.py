@@ -150,14 +150,16 @@ def test_fullfile():
 
     # Retrieve the XMP faces. 
     file = io.BytesIO(dt)
-    xmp_data = face_extraction.Get_XMP_Faces(file)
+    success, xmp_data = face_extraction.Get_XMP_Faces(file)
+    assert success, 'XMP extraction failed'
+    print("XMP DATA: ", xmp_data)
 
     parameter_file=os.path.join(PARENT_DIR, 'parameters.xml')
     with open(parameter_file, 'r') as fh:
         parameters = xmltodict.parse(fh.read())
         
     print("extracting")
-    matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(file, parameters)
+    matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(file, parameters, xmp_data)
 
     for idx in range(len(matched_faces)):
         encoding = matched_faces[idx].encoding
