@@ -1,4 +1,5 @@
 dlib
+face_recognition
 coloredlogs
 flask
 xmltodict
@@ -7,4 +8,4 @@ matplotlib
 gunicorn
 flask_session
 jsonpickle
-
+python-xmp-toolkit

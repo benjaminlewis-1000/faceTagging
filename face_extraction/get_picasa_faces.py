@@ -200,6 +200,7 @@ def Get_XMP_Faces(file, test=False):
     return True, persons
 
 if __name__ == "__main__":
-    print(Get_XMP_Faces(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), True))
+    # print(Get_XMP_Faces(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), True))
     file = '/mnt/NAS/Photos/Completed/Pictures_finished/Mission/estancia/food/IMG_0054.JPG'
+    file = '/mnt/NAS/Photos/tmp_pic/c/pict0929.jpg'
     print(Get_XMP_Faces(file, True))

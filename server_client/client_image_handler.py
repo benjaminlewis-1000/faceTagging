@@ -226,6 +226,8 @@ if __name__ == "__main__":
         file = prefix + 'Pictures_In_Progress/2018/Babymoon/Italy/panorama_finish/DSC_6097_stitch2.jpg'
         file = prefix + 'Pictures_In_Progress/Adam Mission/Adam mission book/portrait/100_4352.JPG'
         file = prefix + 'Pictures_In_Progress/Adam Mission/Adam mission book/landscape/Lewis Reunion 2012 (34).JPG'
+#        file = prefix + 'Completed/Pictures_finished/2017/Family Texts/meagan_mission_return (6).jpg'
+#        file = prefix + 'Completed/Pictures_finished/2017/Ben Work Trips/rya.jpg'
 
         logger = logging.getLogger('__main__')
         logger.setLevel(logging.DEBUG)
