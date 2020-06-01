@@ -19,22 +19,25 @@ import xml
 import xmltodict
 from libxmp.utils import file_to_dict
 from libxmp import XMPFiles, consts
+from tempfile import NamedTemporaryFile
 
 
 def extractFaces(file):
-
-    try:
-        xmpfile = XMPFiles( file_path=file, open_forupdate=True )
-        xmp = xmpfile.get_xmp()
-    except Exception as e:
-        xmp = None
 
     if isinstance(file, str):
         with open(file, 'rb') as fh:
             data = fh.read()
     else:
         data = file.read()
-        file.seek(0)
+        f = NamedTemporaryFile()
+        f.write(data)
+        file = f.name
+
+    try:
+        xmpfile = XMPFiles( file_path=file, open_forupdate=True )
+        xmp = xmpfile.get_xmp()
+    except Exception as e:
+        xmp = None
 
     # Only look in the xmp metadata tags. 
     # Keeps us from finding crazy coincidences
@@ -44,8 +47,6 @@ def extractFaces(file):
     data = re.findall('<x:xmpmeta.*</x:xmpmeta>', str(data))
     # header_xmp = re.findall('<x:xmpmeta.*</x:xmpmeta>', str(header))
     # assert len(data) == len(header_xmp)
-    # print(header)
-    # print()
     assert len(header) > 0
     if len(data) == 0:
         return []
@@ -67,6 +68,7 @@ def extractFaces(file):
     if xmp is None or len(xmp_dict) == 0:
         # This is where I get into a number of caveats that I built up as the code failed. 
         xmp_data_all = re.findall('<x:xmpmeta.*?/x:xmpmeta>', str(data), re.I)
+        print("TYPE xmp data is ", type(xmp_data_all))
         if len(xmp_data_all) == 0:
             assert number_of_names == 0
             return []
@@ -219,6 +221,7 @@ if __name__ == "__main__":
 
 
     file = '/mnt/NAS/Photos/tmp_pic/DSC_1303.JPG'
+    file = '/mnt/NAS/Photos/Pictures_In_Progress/Adam Mission/Adam mission book/landscape/Lewis Reunion 2012 (34).JPG'
 
     d = Get_XMP_Faces(file)
     print(d)
