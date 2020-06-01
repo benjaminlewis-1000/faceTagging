@@ -109,6 +109,18 @@ def Get_XMP_Faces(file, test=False):
                     if 'rdf:Description' in person_dict.keys():
                         person_data = person_dict['rdf:Description']
                         # assert '@mwg-rs:Name' in person_data.keys()
+                        if 'MPReg:Rectangle' in person_data.keys(): 
+                            if 'MPReg:PersonDisplayName' not in person_data.keys():
+                                return
+                            name = person_data['MPReg:PersonDisplayName']['#text']
+                            rect = person_data['MPReg:Rectangle']['#text']
+                            rect = rect.split(',')
+                            area_x = rect[0]
+                            area_y = rect[1]
+                            area_w = rect[2]
+                            area_h = rect[3]
+                            return {'Name': name, 'Area_x': area_x, 'Area_y': area_y, 'Area_w': area_w, 'Area_h': area_h}
+
                         if '@mwg-rs:Name' not in person_data.keys():
                             return
                         else:
@@ -203,4 +215,6 @@ if __name__ == "__main__":
     # print(Get_XMP_Faces(os.path.join('/home/benjamin/gitRepos/test_imgs', '1.JPG'), True))
     file = '/mnt/NAS/Photos/Completed/Pictures_finished/Mission/estancia/food/IMG_0054.JPG'
     file = '/mnt/NAS/Photos/tmp_pic/c/pict0929.jpg'
+    print(Get_XMP_Faces(file, True))
+    file = '/mnt/NAS/Photos/Pictures_In_Progress/Adam Mission/Adam mission book/landscape/Lewis Reunion 2012 (34).JPG'
     print(Get_XMP_Faces(file, True))
