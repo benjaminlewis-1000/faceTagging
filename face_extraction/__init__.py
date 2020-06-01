@@ -1,5 +1,6 @@
 
-from .get_picasa_faces import Get_XMP_Faces
+# from .get_picasa_faces import Get_XMP_Faces
+from .extract_picasa_faces import Get_XMP_Faces
 from .tiled_face_detect import detect_pyramid
 from .rectangle import Rectangle, rectangleError, Point
 from .face_rect import FaceRect

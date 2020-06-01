@@ -1,32 +1,24 @@
-#! /usr/bin/env python
 
-import os
-import cv2 
+if __name__ == "__main__":
+    from rectangle import Rectangle 
+else:
+    from .rectangle import Rectangle 
+from PIL import Image
+from time import sleep
+import binascii
+import collections
+import cv2
+import base64
+from base64 import b64decode
+import face_recognition
+import io
+import matplotlib.pyplot as plt
+import numpy as np
+import re
+import xml
+import xmltodict
 from libxmp.utils import file_to_dict
 from libxmp import XMPFiles, consts
-import re
-import collections
-from queue import Queue
-import threading
-import time
-import xmltodict
-import signal
-
-file = '/mnt/NAS/Photos/tmp_pic/DSC_1303.JPG'
-file = '/mnt/NAS/Photos/tmp_pic/c/12-10-07 158.jpg'
-file = '/mnt/NAS/Photos/tmp_pic/c/2-29-08 016.jpg'
-file = '/mnt/NAS/Photos/tmp_pic/c/pict0929.jpg'
-file = '/mnt/NAS/Photos/tmp_pic/e/20180915_215726.jpg'
-file = '/mnt/NAS/Photos/tmp_pic/b/377611_10151954743470296_1763500400_n.jpg'
-file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/John Land Party/DSC_3215.JPG'
-file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Matt and Rachel Wedding/Debbie_matt_rachel_wedding/IMG_1311 2.JPG'
-file = '/mnt/NAS/Photos/Pictures_In_Progress/Erica Mission/zips/northernlights.jpg'
-file = '/mnt/NAS/Photos/Pictures_In_Progress/preprocess/from_dropbox/2019-02-22 20.55.09.jpg'
-file = '/mnt/NAS/Photos/Completed/Pictures_finished/Family Pictures/2017/Mom Phone/1482109274897.jpg'
-file = '/mnt/NAS/Photos/Completed/Pictures_finished/Family Pictures/Old House, Nick Eagle Project/DSCN0203.JPG'
-file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Baltimore Trip/2019-04-18 19.25.31-1.jpg'
-file = "/mnt/NAS/Photos/Completed/Pictures_finished/Emily's Pictures/3-30-2009/DSC08050.JPG"
-file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Utah Trip Summer/2019-10-02 18.18.52.jpg'
 
 
 def extractFaces(file):
@@ -37,32 +29,37 @@ def extractFaces(file):
     except Exception as e:
         xmp = None
 
-    with open(file, 'rb') as fh:
-        data = fh.read()
-        # Only look in the xmp metadata tags. 
-        # Keeps us from finding crazy coincidences
-        # in the file. I mean, it can still happen,
-        # but less likely.
-        header = re.match(b'.*?\xff\xc0', data, re.DOTALL).group(0)
-        data = re.findall('<x:xmpmeta.*</x:xmpmeta>', str(data))
-        # header_xmp = re.findall('<x:xmpmeta.*</x:xmpmeta>', str(header))
-        # assert len(data) == len(header_xmp)
-        # print(header)
-        # print()
-        assert len(header) > 0
-        if len(data) == 0:
-            return []
-        else:
-            data = data[0]
-        names = re.findall('.{7}:name=', str(data), re.I)
-        # Exclude an Adobe color thing 
-        names = [x for x in names if 'crs:Name' not in x]
-        for n in names:
-            if 'mwg-rs' not in n:
-                raise ValueError("Not as expected'")
-        number_of_names = len(names)
-        # print(number_of_names)
-        print(f"File {file} has {number_of_names} people.")
+    if isinstance(file, str):
+        with open(file, 'rb') as fh:
+            data = fh.read()
+    else:
+        data = file.read()
+        file.seek(0)
+
+    # Only look in the xmp metadata tags. 
+    # Keeps us from finding crazy coincidences
+    # in the file. I mean, it can still happen,
+    # but less likely.
+    header = re.match(b'.*?\xff\xc0', data, re.DOTALL).group(0)
+    data = re.findall('<x:xmpmeta.*</x:xmpmeta>', str(data))
+    # header_xmp = re.findall('<x:xmpmeta.*</x:xmpmeta>', str(header))
+    # assert len(data) == len(header_xmp)
+    # print(header)
+    # print()
+    assert len(header) > 0
+    if len(data) == 0:
+        return []
+    else:
+        data = data[0]
+    names = re.findall('.{7}:name=', str(data), re.I)
+    # Exclude an Adobe color thing 
+    names = [x for x in names if 'crs:Name' not in x]
+    for n in names:
+        if 'mwg-rs' not in n:
+            raise ValueError("Not as expected'")
+    number_of_names = len(names)
+    # print(number_of_names)
+    print(f"File {file} has {number_of_names} people.")
 
     if xmp is not None:
         xmp_dict = file_to_dict(file)
@@ -164,46 +161,70 @@ def extractFaces(file):
 
         return person_data
 
-data = Get_XMP_Faces(file)
+# This function will extract the XMP Bag Tag from the header of 
+# a JPG file. This is where the now-defunct Picasa program, by 
+# Google, stored face information. This function supports both 
+# paths to files as well as BytesIO in-memory files. 
+def Get_XMP_Faces(file, test=False):
 
-fls = Queue()
-for root, dirs, files in os.walk('/mnt/NAS/Photos'):
-    for num, f in enumerate(files):
-        if f.lower().endswith(('.jpg', '.jpeg')):
-            fname = os.path.join(root, f)
-            fls.put(fname)
-            # print(f"{num}/{len(files)},  {fname}")
+    persons = extractFaces(file)
 
-data = Get_XMP_Faces(fname)
-signal = threading.Event()
+    if type(file) == type('string'):
+        image = cv2.imread(file)
+    elif type(file) == io.BytesIO:
+        file_bytes = np.asarray(bytearray(file.getvalue()), dtype=np.uint8)
+        image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+ 
+    # X and Y are locations in the middle of the face. 
+    img_height, img_width, _ = image.shape
 
-def process_data(threadName):
-    # print(threadName)
-    while not fls.empty():
-        fname = fls.get()
-        print(f'{fls.qsize()} left to do')
-        # print(fname)
-        s = time.time()
-        try:
-            data = Get_XMP_Faces(fname)
-        except :
-            print(f"Error on {fname}")
-            stop_threads=True
-            signal.set()
-            break      
-        # print(time.time() - s)      
-        if signal.is_set():
-            break            
+    # Reverse parsing. We process the list of persons
+    # *again* to turn the tags into Rectangle objects
+    # and put that in the list that will be returned.
+    # The intermediate data is then popped from the 
+    # dictionary. 
+    for p_num in range(len(persons)-1, -1, -1):
+        left = float(persons[p_num]['Area_x'])
+        top = float(persons[p_num]['Area_y']) 
+        height = float(persons[p_num]['Area_h']) 
+        width = float(persons[p_num]['Area_w'])         
 
-num_todo = 759000
-# num_todo = 78900
-while fls.qsize() > num_todo:
-    f = fls.get()
+        right = left + width / 2
+        bottom = top + height / 2
+        left = left - width / 2
+        top = top - height / 2
 
-threads = []
-for t in range(100):
-    t = threading.Thread(target=process_data, args=(t,) )
-    threads.append(t)
-    t.start()
+        left = int(left * img_width)
+        right = int(right * img_width)
+        top = int(top * img_height)
+        bottom = int(bottom * img_height)
 
-# threading.start_new_thread(process_data, 1)
+        height = int(height * img_height)
+        width = int(width * img_width)
+
+        bounding_rectangle = Rectangle(height, width, leftEdge=left, topEdge=top)
+        persons[p_num]['bounding_rectangle'] = bounding_rectangle
+
+        # Turning the list into a list of rectangles.
+        persons[p_num].pop('Area_x')
+        persons[p_num].pop('Area_y')
+        persons[p_num].pop('Area_h')
+        persons[p_num].pop('Area_w')
+  
+    #  if we found something, return tag information
+    return True, persons
+
+
+if __name__ == "__main__":
+
+
+    file = '/mnt/NAS/Photos/tmp_pic/DSC_1303.JPG'
+
+    d = Get_XMP_Faces(file)
+    print(d)
+
+    with open(file, 'rb') as imageFile:
+#        data_str = base64.b64encode(imageFile.read())
+        data_str = io.BytesIO(imageFile.read())
+        dd = Get_XMP_Faces(data_str)
+        print(dd)

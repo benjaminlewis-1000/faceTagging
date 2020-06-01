@@ -4,7 +4,7 @@ import unittest
 import os
 import numpy as np
 import xmltodict
-# import get_picasa_faces
+# import extract_picasa_faces
 import face_extraction
 import dlib
 import re
