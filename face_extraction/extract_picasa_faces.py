@@ -69,7 +69,7 @@ def extractFaces(file):
     if xmp is None or len(xmp_dict) == 0:
         # This is where I get into a number of caveats that I built up as the code failed. 
         xmp_data_all = re.findall('<x:xmpmeta.*?/x:xmpmeta>', str(data), re.I)
-        print("TYPE xmp data is ", type(xmp_data_all))
+        # print("TYPE xmp data is ", type(xmp_data_all))
         if len(xmp_data_all) == 0:
             assert number_of_names == 0
             return []
@@ -171,7 +171,7 @@ def extractFaces(file):
 def Get_XMP_Faces(file, test=False):
 
     persons = extractFaces(file)
-    print(persons)
+    # print(persons)
 
     if type(file) == type('string'):
         image = cv2.imread(file)
@@ -191,16 +191,17 @@ def Get_XMP_Faces(file, test=False):
         exif = {}
 
 
+    img_height, img_width, _ = image.shape
     if orientation in exif.keys():
         if exif[orientation] in [6, 8]:
             img_width, img_height, _ = image.shape
         else:
             img_height, img_width, _ = image.shape
-    plt.imshow(image)
-    plt.show()
+    # plt.imshow(image)
+    # plt.show()
     # X and Y are locations in the middle of the face. 
 
-    print(img_height, img_width)
+    # print(img_height, img_width)
 
     # Reverse parsing. We process the list of persons
     # *again* to turn the tags into Rectangle objects
@@ -237,7 +238,7 @@ def Get_XMP_Faces(file, test=False):
         persons[p_num].pop('Area_w')
   
     #  if we found something, return tag information
-    print("At the end: ", persons)
+    # print("At the end: ", persons)
     return True, persons
 
 

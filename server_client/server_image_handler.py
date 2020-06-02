@@ -152,7 +152,6 @@ def test_fullfile():
     file = io.BytesIO(dt)
     success, xmp_data = face_extraction.Get_XMP_Faces(file)
     assert success, 'XMP extraction failed'
-    print("XMP DATA: ", xmp_data)
 
     parameter_file=os.path.join(PARENT_DIR, 'parameters.xml')
     with open(parameter_file, 'r') as fh:

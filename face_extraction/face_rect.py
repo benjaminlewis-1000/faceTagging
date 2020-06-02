@@ -154,7 +154,7 @@ class FaceRect:
 
         # If one rectangle is less than 4% the size of the other
         # rectangle, then we will reject it. 
-        print(f"Too big inside is {too_big_insideness}")
+        # print(f"Too big inside is {too_big_insideness}")
         if too_big_insideness < 0.04:
             return False
 

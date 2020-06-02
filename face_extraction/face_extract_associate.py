@@ -60,7 +60,7 @@ def extract_faces_from_image(image_path, parameters, tagged_faces):
     # Get the faces from XMP data, then detect faces with deep neural network
     # If we have rotated the image, we need to rotate the tagged faces as well.
     # success_faces, tagged_faces = face_extraction.Get_XMP_Faces(image_path)
-    print("Tag: ", tagged_faces)
+    # print("Tag: ", tagged_faces)
 
     ##########################################
     # Rotate the image based on metadata 
@@ -77,7 +77,7 @@ def extract_faces_from_image(image_path, parameters, tagged_faces):
 
 
     if orientation in exif.keys():
-        print("EXIF: ", exif[orientation])
+        # print("EXIF: ", exif[orientation])
         if exif[orientation] == 3:
             # Rotate 180
             npImage = cv2.rotate(npImage, cv2.ROTATE_180)
