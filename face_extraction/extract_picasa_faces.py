@@ -51,16 +51,16 @@ def extractFaces(file):
 #    assert len(header) > 0
     if len(data) == 0:
         return []
-    else:
-        data = data[0]
-    names = re.findall('.{7}:name=', str(data), re.I)
-    # Exclude an Adobe color thing 
-    names = [x for x in names if 'crs:Name' not in x]
-    for n in names:
-        if 'mwg-rs' not in n:
-            raise ValueError("Not as expected'")
-    number_of_names = len(names)
-    # print(number_of_names)
+    number_of_names = 0
+    for d in data:
+        names = re.findall('.{7}:name=', str(d), re.I)
+        # Exclude an Adobe color thing 
+        names = [x for x in names if 'crs:Name' not in x]
+        for n in names:
+            if 'mwg-rs' not in n:
+                raise ValueError("Not as expected'")
+        number_of_names += len(names)
+
     print(f"File {file} has {number_of_names} people.")
 
     if xmp is not None:
@@ -249,6 +249,7 @@ if __name__ == "__main__":
     file = '/mnt/NAS/Photos/Pictures_In_Progress/Adam Mission/Adam mission book/landscape/Lewis Reunion 2012 (34).JPG'
     file = '/mnt/NAS/Photos/Completed/Pictures_finished/2016/Utah/baker_reunion (3).jpg'
     file = '/mnt/NAS/Photos/Completed/Pictures_finished/Family Pictures/2017/Mom Phone/1479419708717.jpg'
+    file = '/tmp/t.jpg'
 
     d = Get_XMP_Faces(file)
     print(d)
