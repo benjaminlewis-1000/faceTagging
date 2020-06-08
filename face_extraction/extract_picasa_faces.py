@@ -53,13 +53,20 @@ def extractFaces(file):
         return []
     number_of_names = 0
     for d in data:
-        names = re.findall('.{7}:name=', str(d), re.I)
+        names = re.findall('.{6}:name=', str(d), re.I | re.MULTILINE)
         # Exclude an Adobe color thing 
         names = [x for x in names if 'crs:Name' not in x]
         for n in names:
             if 'mwg-rs' not in n:
                 raise ValueError("Not as expected'")
         number_of_names += len(names)
+        names = re.findall('.{7}:name\>', str(d), re.I | re.MULTILINE)
+        # Exclude an Adobe color thing 
+        names = [x for x in names if 'crs:Name' not in x]
+        for n in names:
+            if 'mwg-rs' not in n:
+                raise ValueError("Not as expected'")
+        number_of_names += len(names) // 2
 
     print(f"File {file} has {number_of_names} people.")
 
@@ -68,7 +75,7 @@ def extractFaces(file):
 
     if xmp is None or len(xmp_dict) == 0:
         # This is where I get into a number of caveats that I built up as the code failed. 
-        xmp_data_all = re.findall('<x:xmpmeta.*?/x:xmpmeta>', str(data), re.I)
+        xmp_data_all = re.findall('<x:xmpmeta.*?/x:xmpmeta>', str(data), re.I | re.MULTILINE)
         # print("TYPE xmp data is ", type(xmp_data_all))
         if len(xmp_data_all) == 0:
             assert number_of_names == 0
@@ -250,6 +257,7 @@ if __name__ == "__main__":
     file = '/mnt/NAS/Photos/Completed/Pictures_finished/2016/Utah/baker_reunion (3).jpg'
     file = '/mnt/NAS/Photos/Completed/Pictures_finished/Family Pictures/2017/Mom Phone/1479419708717.jpg'
     file = '/tmp/t.jpg'
+    file = '/mnt/NAS/Photos/Pictures_In_Progress/Family History/2005-06-06 22.02.51.jpg'
 
     d = Get_XMP_Faces(file)
     print(d)

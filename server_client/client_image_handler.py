@@ -206,6 +206,8 @@ if __name__ == "__main__":
     # mf = face_extract_client('my_pic.jpg')
 
     client_ip = client_ip_discover.server_finder()
+    # print(clie)
+    # client_ip = '192.168.1.146'
     if 'IN_DOCKER' in os.environ.keys() and os.environ['IN_DOCKER']:
         mf = face_extract_client(os.path.join('/test_imgs_filepopulate/', 'has_face_tags.jpg'), client_ip)
     else:
@@ -231,6 +233,11 @@ if __name__ == "__main__":
 #        file = prefix + 'Completed/Pictures_finished/2017/Ben Work Trips/rya.jpg'
         file = '/mnt/NAS/Photos/Completed/Pictures_finished/2016/Utah/baker_reunion (3).jpg'
         file = prefix + 'Completed/Pictures_finished/Family Pictures/2017/Mom Phone/1479419708717.jpg'
+
+        file = prefix + 'Pictures_In_Progress/Family History/2005-06-06 22.02.51.jpg'
+        file = prefix + 'Pictures_In_Progress/Emily_amazon_uploads/2015-10-13_20-07-55_000.jpeg'
+        # file = prefix + 'Pictures_In_Progress/2018/Babymoon/Italy/compressed/DSC_6097_stitch2.jpg'
+
 
         logger = logging.getLogger('__main__')
         logger.setLevel(logging.DEBUG)

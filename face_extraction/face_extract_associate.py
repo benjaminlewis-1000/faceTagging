@@ -340,7 +340,8 @@ def _merge_detected_faces(list_of_detects, pristine_image):
             for i in range(len(each_cluster)):
                 for j in range(len(each_cluster)):
                     if i != j:
-                        assert each_cluster[i].rectangle != each_cluster[j].rectangle
+                        assert each_cluster[i].rectangle != each_cluster[j].rectangle, \
+                            f'{each_cluster[i]} == {each_cluster[j]}'
 
             # We have a few cases here. 
             if len(each_cluster) == 1:
@@ -685,7 +686,9 @@ if __name__ == "__main__":
     file = "/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-07-27 20.23.41.jpg"
     file = '/mnt/NAS/Photos/Pictures_In_Progress/2019/Life/2019-11-23 15.07.24.jpg'
     file = '/mnt/NAS/Photos/Completed/Pictures_finished/Peru 2012/peru 025.JPG'
+    file = '/mnt/NAS/Photos/Pictures_In_Progress/Emily_amazon_uploads/2015-10-13_20-07-55_000.jpeg'
 
+    success, xmp_data = face_extraction.Get_XMP_Faces(file)
 
     parameter_file=os.path.join(PARENT_DIR, 'parameters.xml')
     with open(parameter_file, 'r') as fh:
@@ -703,9 +706,9 @@ if __name__ == "__main__":
     else:
         exif = {}
 
-    print(exif[orientation])
 
     if orientation in exif.keys():
+        print(exif[orientation])
         if exif[orientation] == 3:
             # Rotate 180
             npImage = cv2.rotate(npImage, cv2.ROTATE_180)
@@ -716,7 +719,7 @@ if __name__ == "__main__":
             # Rotate left -- 90 
             npImage = cv2.rotate(npImage, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
-    matched_faces, ml_detected_faces, tagged_faces, elapsed_time = extract_faces_from_image(file, parameters)
+    matched_faces, ml_detected_faces, tagged_faces, elapsed_time = extract_faces_from_image(file, parameters, xmp_data)
 
     for mf in matched_faces:
         r = mf.rectangle

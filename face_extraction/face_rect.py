@@ -101,8 +101,8 @@ class FaceRect:
             sq_size = self.square_face.shape
         else:
             sq_size = "N/A"
-        return "rectangle = {}, name = {}, encoding = {}, img_size = {}, sq_img_size = {}".\
-            format(self.rectangle, self.name, enc_fragment, img_size, sq_size)
+        return "rectangle = {}, name = {}, encoding = {}, img_size = {}, sq_img_size = {}, level = {}".\
+            format(self.rectangle, self.name, enc_fragment, img_size, sq_size, self.detection_level)
 
     def __repr__(self):
         if self.encoding is not None:
@@ -118,8 +118,8 @@ class FaceRect:
             sq_size = self.square_face.shape
         else:
             sq_size = "N/A"
-        return "rectangle = {}, name = {}, encoding = {}, img_size = {}, sq_img_size = {}".\
-            format(self.rectangle, self.name, enc_fragment, img_size, sq_size)
+        return "rectangle = {}, name = {}, encoding = {}, img_size = {}, sq_img_size = {}, level = {}".\
+            format(self.rectangle, self.name, enc_fragment, img_size, sq_size, self.detection_level)
 
     def __assert_cmp_to_face__(self, face):
         assert isinstance(face, FaceRect), \

@@ -159,6 +159,8 @@ def detect_pyramid(cv_image, parameters):
                     # Get the encoding on the upscaled image 
                     # using the upsampled face bounding boxes 
                     encoding = face_recognition.face_encodings(cv_image, known_face_locations=face_loc_rescaled, num_jitters=10)
+                    # encoding2 = face_recognition.face_encodings(cv_image, known_face_locations=face_loc_rescaled, num_jitters=10)
+                    
                     assert len(encoding) == 1
                     encoding = encoding[0]
 
@@ -177,8 +179,23 @@ def detect_pyramid(cv_image, parameters):
                     faceList.append(face)
 
     faceList = list(set(faceList))
+
+    # Get rid of faces with exact rectangle duplicates
+    faces_skip = []
+
+    for i, face in enumerate(faceList):
+        for i2 in range(i+1, len(faceList)):
+            if faceList[i].rectangle == faceList[i2].rectangle:
+                print(i, i2)
+                faces_skip.append(i2)
+
+    faces_skip.sort()
+    # print(faceList[faces_skip[0]])
+    for i in range(len(faces_skip) - 1, -1, -1):
+        faceList.pop(faces_skip[i])
+
     elapsed_time = time.time() - start_time
-    print("Elapsed time is : " + str( elapsed_time ) )
+    print("Elapsed time is : " + str( elapsed_time ), len(faceList) )
 
     # Drawing function 
     # for eachFace in list(set(faceList)):
