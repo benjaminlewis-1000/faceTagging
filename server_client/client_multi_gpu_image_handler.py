@@ -92,8 +92,8 @@ def image_for_network(filename):
 
     return payload, headers
 
-def face_extract_client(filename, server_ip_finder, ip_idx = None, logger=None, ip_checked=False):
-    if ip_idx is None:
+def face_extract_client(filename, server_ip_finder, ip_address = None, logger=None, ip_checked=False):
+    if ip_address is None:
         ip_idx = 0
 
     if logger is None:
@@ -104,18 +104,18 @@ def face_extract_client(filename, server_ip_finder, ip_idx = None, logger=None, 
         ch.setLevel(logging.DEBUG)
         logger.addHandler(ch)
         coloredlogs.install()
-
+        
     if ip_checked:
         server_there = True
     else:
-        server_there = server_ip_finder.check_ip(ip_idx)
+        server_there = server_ip_finder.check_ip(ip_address)
         
     if server_there:
-        ext_ip = server_ip_finder.server_ips[ip_idx]
+        ext_ip = ip_address
     else:
         server_ip_finder.find_external_server()
         ext_ip = None
-
+    
     with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
         config = xmltodict.parse(p.read())
     port_image_handle = int(config['params']['ports']['server_port_image_handle'])

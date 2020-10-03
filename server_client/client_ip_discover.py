@@ -24,7 +24,7 @@ class server_finder():
             self.client_port = int(os.environ['CLIENT_FACE_PORT'])
         else:
             self.client_port = int(config['params']['ports']['client_return_port'])
-        print(self.client_port)
+        # print(self.client_port)
 
         self.get_my_ip()
 
@@ -81,7 +81,7 @@ class server_finder():
             # my_subnet = ipaddress.ip_network(my_ip + '/255.255.255.0', strict)
             for i in range(255):
                 ip_test = f'{self.my_subnet}{i+1}'
-                print(ip_test) 
+                # print(ip_test) 
                 try:
                     # Broadcast a message. 127.0.0.1 should be '<broadcast>'.
                     tmp = client.sendto(data_return, (ip_test, self.port_ip_disc))

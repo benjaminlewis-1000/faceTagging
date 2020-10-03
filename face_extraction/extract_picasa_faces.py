@@ -17,8 +17,11 @@ import numpy as np
 import re
 import xml
 import xmltodict
-from libxmp.utils import file_to_dict
-from libxmp import XMPFiles, consts
+try:
+    from libxmp.utils import file_to_dict
+    from libxmp import XMPFiles, consts
+except:
+    pass
 from tempfile import NamedTemporaryFile
 
 

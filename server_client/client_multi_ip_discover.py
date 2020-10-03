@@ -16,18 +16,21 @@ class server_finder():
     def __init__(self, logger=None):
 
         # self.server_ip = None
+        # print("Init of server finder")
         self.logger = logger
         with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
             config = xmltodict.parse(p.read())
 
         self.port_ip_disc = int(config['params']['ports']['server_port_ip_disc'])
+        # print(f"Port is {self.port_ip_disc}")
         if 'CLIENT_FACE_PORT' in os.environ.keys():
             self.client_port = int(os.environ['CLIENT_FACE_PORT'])
         else:
             self.client_port = int(config['params']['ports']['client_return_port'])
-        print(self.client_port)
+        # print(self.client_port)
 
         self.get_my_ip()
+        # print(f"My ip is {self.my_ip}")
 
         if self.logger is not None:
             self.logger.debug(f"My ip is {self.my_ip}")
@@ -76,6 +79,8 @@ class server_finder():
             else:
                 print(msg)
                 
+            # print(msg)
+
             client.settimeout(timeout)
             # client.setblocking(0)
             # sleep(1)
@@ -83,7 +88,6 @@ class server_finder():
             valid_ips = []
             for i in range(255):
                 ip_test = f'{self.my_subnet}{i+1}'
-                # print(ip_test)    
                 try:
                     # Broadcast a message. 127.0.0.1 should be '<broadcast>'.
                     tmp = client.sendto(data_return, (ip_test, self.port_ip_disc))
@@ -93,7 +97,7 @@ class server_finder():
                     return_port = int(data['return_port'])
                     return_ip = data['ip_addr']
                     return_found = True
-                    print(data)
+                    # print(data, return_ip, return_port)
                     # return return_ip, return_port, return_found
                     valid_ips.append((return_ip, return_port))
                 except socket.timeout:
@@ -122,13 +126,18 @@ class server_finder():
             self.server_ips = None
 
 
-    def check_ip(self, index=None):
+    def check_ip(self, ip_address=None):
 
-        if index is not None:
-            assert index in list(range(len(self.server_ips)))
-            ips_check = [self.server_ips[index]]
+        if isinstance(ip_address, int):
+            ip_address = self.server_ips[ip_address]
+
+        if ip_address is not None:
+            assert ip_address in self.server_ips
+            ips_check = [ip_address]
         else:
             ips_check = self.server_ips
+
+        # print(ips_check)
 
         if self.server_ips is None:
             return False
@@ -163,7 +172,8 @@ class server_finder():
 if __name__ == "__main__":
     s = server_finder()
     print("Found: ", s.server_ips)
-    print("Still there: ", s.check_ip(0))
-    print("Still there: ", s.check_ip(1))
-    print("Still there: ", s.check_ip())
-    print("Still there: ", s.check_ip())
+    print("Still there: ", s.check_ip('192.168.1.16'))
+#    print("Still there: ", s.check_ip(0))
+#    print("Still there: ", s.check_ip(1))
+#    print("Still there: ", s.check_ip())
+#    print("Still there: ", s.check_ip())
