@@ -105,7 +105,7 @@ def open_and_rotate_image(source_image_file):
             else:
                 # Could actually be a decompression bomb attack, IDK, and not
                 # just a huge image. 
-                continue
+                return None
             # print(npImage.shape[0] * npImage.shape[1], Image.MAX_IMAGE_PIXELS)
     image_exif = Image.open(source_image_file)
 
@@ -154,6 +154,7 @@ def alive():
 @app.route('/api/face_reencode', methods=['POST'])
 def face_reencode():
     r = request
+    print("Face reencode")
 
     if not request.content_type == 'text':
         raise ValueError("Posted data must be text.")
@@ -192,13 +193,24 @@ def face_reencode():
     with open(parameter_file, 'r') as fh:
         parameters = xmltodict.parse(fh.read())
         
-    print("extracting")
+    print("extracting image encoding")
 
     npImage = open_and_rotate_image(file)
 
-    encoding = face_recognition.face_encodings(npImage, known_face_locations=face_locations, num_jitters=400, model='large')
+    s = time.time()
+    encoding = face_recognition.face_encodings(npImage, known_face_locations=face_locations, num_jitters=200, model='large')
+    print(time.time() - s)
 
-    print(encoding)
+    enc = (json.dumps(list(encoding[0])))
+
+    # # build a response dict to send back to client
+    response = {'success': True, 'message': 'image received and processed', \
+                'encoding': enc} 
+
+    # # encode response using jsonpickle
+    response_pickled = jsonpickle.encode(response)
+    
+    return Response(response=response_pickled, status=200, mimetype="application/json")
 
 # route http posts to this method
 @app.route('/api/face_extract', methods=['POST'])
