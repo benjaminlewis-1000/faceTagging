@@ -86,6 +86,51 @@ except AttributeError:
 except ImportError:
     using_cuda = False
 
+def open_and_rotate_image(source_image_file):
+
+    try:
+        npImage = face_recognition.load_image_file(source_image_file)
+    except Image.DecompressionBombError:
+
+        if type(source_image_file) == type('string'):
+            npImage = cv2.imread(source_image_file)
+        elif type(source_image_file) == io.BytesIO:
+            file_bytes = np.asarray(bytearray(source_image_file.getvalue()), dtype=np.uint8)
+            npImage = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+            this_pix = npImage.shape[0] * npImage.shape[1]
+            if this_pix < 5 * Image.MAX_IMAGE_PIXELS:
+                # No problem, just a really huge image. 
+                Image.MAX_IMAGE_PIXELS = this_pix + 1
+                npImage = face_recognition.load_image_file(source_image_file)
+            else:
+                # Could actually be a decompression bomb attack, IDK, and not
+                # just a huge image. 
+                continue
+            # print(npImage.shape[0] * npImage.shape[1], Image.MAX_IMAGE_PIXELS)
+    image_exif = Image.open(source_image_file)
+
+    for orientation in ExifTags.TAGS.keys():
+        if ExifTags.TAGS[orientation]=='Orientation':
+            break
+
+    if 'items' in dir(image_exif._getexif()):
+        exif=dict(image_exif._getexif().items())
+    else:
+        exif = {}
+
+    if orientation in exif.keys():
+        if exif[orientation] == 3:
+            # Rotate 180
+            npImage = cv2.rotate(npImage, cv2.ROTATE_180)
+        elif exif[orientation] == 6:
+            # Rotate right -- 270
+            npImage = cv2.rotate(npImage, cv2.ROTATE_90_CLOCKWISE)
+        elif exif[orientation] == 8:
+            # Rotate left -- 90 
+            npImage = cv2.rotate(npImage, cv2.ROTATE_90_COUNTERCLOCKWISE)
+
+    return npImage
+
 # Source of JSON encoder: https://code.tutsplus.com/tutorials/serialization-and-deserialization-of-python-objects-part-1--cms-26183
 class CustomEncoder(json.JSONEncoder):
 
@@ -104,9 +149,60 @@ def alive():
 
     return Response(response=response_pickled, status=200, mimetype="application/json")
 
+
+# route http posts to this method
+@app.route('/api/face_reencode', methods=['POST'])
+def face_reencode():
+    r = request
+
+    if not request.content_type == 'text':
+        raise ValueError("Posted data must be text.")
+
+
+    data = json.loads(r.data)
+    file_data = data['base64_file']
+    face_locations = data['bounding_box']
+    # Convert the string to bytes. We know that the string 
+    # is a base64 string encoded using utf-8.
+    file_data = file_data.encode('utf-8')
+    # Get the hex checksum from the payload
+    checksum_data = data['checksum']
+    # Compute the md5 checksum of the binary string. It should
+    # match that of the checksum payload. 
+    loc_checksum = hashlib.md5(file_data)
+    loc_checksum = loc_checksum.hexdigest()
+
+    # If checksums don't match, send information back to client. 
+    if checksum_data != loc_checksum:
+        response = {'success': False, 'message': 'Bad image -- does not match the checksum.' } 
+
+        # # encode response using jsonpickle
+        response_pickled = jsonpickle.encode(response)
+        return Response(response=response_pickled, status=200, mimetype="application/json")
+
+    # Shove that file data into a BytesIO object that can
+    # be read using PIL. The key to getting string data back
+    # from this IO object is to use getvalue, not read.
+
+    dt = base64.b64decode(file_data)
+
+    file = io.BytesIO(dt)
+
+    parameter_file=os.path.join(PARENT_DIR, 'parameters.xml')
+    with open(parameter_file, 'r') as fh:
+        parameters = xmltodict.parse(fh.read())
+        
+    print("extracting")
+
+    npImage = open_and_rotate_image(file)
+
+    encoding = face_recognition.face_encodings(npImage, known_face_locations=face_locations, num_jitters=400, model='large')
+
+    print(encoding)
+
 # route http posts to this method
 @app.route('/api/face_extract', methods=['POST'])
-def test_fullfile():
+def face_extract():
     r = request
 
     # print(session)
