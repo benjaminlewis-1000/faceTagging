@@ -49,9 +49,16 @@ PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(PARENT_DIR)
 
 
-from .server_ip_discover import ip_responder
+try:
+    from .server_ip_discover import ip_responder
+except:
+    from server_ip_discover import ip_responder
+
 from flask import Flask, request, Response, session
 from flask_session import Session
+
+# Required on Jetson now for OpenCV to work.
+os.environ['OPENBLAS_CORETYPE'] = 'ARMV8'
 
 from PIL import Image, ExifTags
 import base64
@@ -85,6 +92,8 @@ except AttributeError:
     using_cuda = False
 except ImportError:
     using_cuda = False
+
+
 
 def open_and_rotate_image(source_image_file):
 

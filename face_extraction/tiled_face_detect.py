@@ -159,7 +159,7 @@ def detect_pyramid(cv_image, parameters):
                     # Get the encoding on the upscaled image 
                     # using the upsampled face bounding boxes 
                     ### # encoding = face_recognition.face_encodings(cv_image, known_face_locations=face_loc_rescaled, num_jitters=10)
-                    encoding = face_recognition.face_encodings(cv_image, known_face_locations=face_loc_rescaled, num_jitters=400, model='large')
+                    encoding = face_recognition.face_encodings(cv_image, known_face_locations=face_loc_rescaled, num_jitters=200, model='large')
                     
                     assert len(encoding) == 1
                     encoding = encoding[0]
