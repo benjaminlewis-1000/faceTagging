@@ -9,7 +9,9 @@ import matplotlib.pyplot as plt
 if __name__ == "__main__":
     from rectangle import Rectangle 
     from face_rect import FaceRect
+    from encode_image_with_bounding import encode_image_with_bounding
 else:
+    from .encode_image_with_bounding import encode_image_with_bounding
     from .rectangle import Rectangle 
     from .face_rect import FaceRect
 
@@ -157,9 +159,8 @@ def detect_pyramid(cv_image, parameters):
                     face_loc_rescaled = [(top_scaled, right_scaled, bottom_scaled, left_scaled)]
 
                     # Get the encoding on the upscaled image 
-                    # using the upsampled face bounding boxes 
-                    ### # encoding = face_recognition.face_encodings(cv_image, known_face_locations=face_loc_rescaled, num_jitters=10)
-                    encoding = face_recognition.face_encodings(cv_image, known_face_locations=face_loc_rescaled, num_jitters=200, model='large')
+                    # using the rescaled face bounding boxes 
+                    encoding = encode_image_with_bounding(npImage = cv_image, bounding_box=face_loc_rescaled, pad_pct = 0.25)
                     
                     assert len(encoding) == 1
                     encoding = encoding[0]

@@ -1,6 +1,10 @@
 #! /usr/bin/env python
 
 import os
+import torch
+from torchvision import transforms
+import face_extraction
+from face_extraction.encode_image_with_bounding import encode_image_with_bounding
 import sys
 
 # Put this file in crontab -e with the line (for initial system startup)
@@ -171,7 +175,7 @@ def face_reencode():
 
     data = json.loads(r.data)
     file_data = data['base64_file']
-    face_locations = data['bounding_box']
+    bounding_box = data['bounding_box']
     # Convert the string to bytes. We know that the string 
     # is a base64 string encoded using utf-8.
     file_data = file_data.encode('utf-8')
@@ -207,7 +211,7 @@ def face_reencode():
     npImage = open_and_rotate_image(file)
 
     s = time.time()
-    encoding = face_recognition.face_encodings(npImage, known_face_locations=face_locations, num_jitters=200, model='large')
+    encoding = encode_image_with_bounding(npImage = npImage, bounding_box=bounding_box, pad_pct = 0.25)
     print(time.time() - s)
 
     enc = (json.dumps(list(encoding[0])))
