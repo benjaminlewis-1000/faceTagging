@@ -156,7 +156,7 @@ def detect_pyramid(cv_image, parameters):
                     height_face = int(np.abs(bottom_scaled - top_scaled))
                     width_face = int(np.abs(right_scaled - left_scaled))
 
-                    face_loc_rescaled = [(top_scaled, right_scaled, bottom_scaled, left_scaled)]
+                    face_loc_rescaled = [(top_scaled, left_scaled, bottom_scaled, right_scaled)]
 
                     # Get the encoding on the upscaled image 
                     # using the rescaled face bounding boxes 

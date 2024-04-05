@@ -22,6 +22,9 @@ def encode_image_with_bounding(npImage, bounding_box, pad_pct = 0.5):
     width = fl[3] - fl[1]
     pad_width = int(half_pad * width)
 
+    assert height > 0
+    assert width > 0
+
     pad_top = np.min((pad_height, fl[0]))
     pad_left = np.min((pad_width, fl[1]))
     pad_bot = pad_top + height
@@ -34,7 +37,11 @@ def encode_image_with_bounding(npImage, bounding_box, pad_pct = 0.5):
 
     cropTensor = torch.Tensor(npCrop)
     cropTensor = cropTensor.permute(2, 0 , 1)
-    out = transforms.functional.autocontrast(cropTensor)
+    try:
+        out = transforms.functional.autocontrast(cropTensor)
+    except Exception as e:
+        print(f"Error! {e}. Tensor dimensions are {cropTensor.shape}, bounding box was {fl}, adjusted is {bounding_box_adj}")
+        raise e
     out = out.permute(1, 2, 0)
     npCrop = out.numpy()
 
