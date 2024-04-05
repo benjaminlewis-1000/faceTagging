@@ -12,7 +12,7 @@ import ipaddress
 PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class server_finder():
-    def __init__(self, logger=None):
+    def __init__(self, client_port=None, logger=None):
 
         # self.server_ip = None
         self.logger = logger
@@ -20,11 +20,14 @@ class server_finder():
             config = xmltodict.parse(p.read())
 
         self.port_ip_disc = int(config['params']['ports']['server_port_ip_disc'])
-        if 'CLIENT_FACE_PORT' in os.environ.keys():
-            self.client_port = int(os.environ['CLIENT_FACE_PORT'])
+        if client_port is None:
+            if 'CLIENT_FACE_PORT' in os.environ.keys():
+                self.client_port = int(os.environ['CLIENT_FACE_PORT'])
+            else:
+                self.client_port = int(config['params']['ports']['client_return_port'])
         else:
-            self.client_port = int(config['params']['ports']['client_return_port'])
-        # print(self.client_port)
+            self.client_port = client_port
+        print(self.client_port)
 
         self.get_my_ip()
 

@@ -211,7 +211,7 @@ if __name__ == "__main__":
     # mf = face_extract_client('my_pic.jpg')
 
     client_ip = client_multi_ip_discover.server_finder()
-    if 'IN_DOCKER' in os.environ.keys() and os.environ['IN_DOCKER']:
+    if False : # 'IN_DOCKER' in os.environ.keys() and os.environ['IN_DOCKER']:
         mf = face_extract_client(os.path.join('/test_imgs_filepopulate/', 'has_face_tags.jpg'), client_ip, ip_idx = 1)
     else:
         prefix = '/mnt/NAS/Photos/'
@@ -233,6 +233,7 @@ if __name__ == "__main__":
         file = prefix + 'Pictures_In_Progress/Adam Mission/Adam mission book/portrait/100_4352.JPG'
         file = prefix + 'Pictures_In_Progress/Adam Mission/Adam mission book/landscape/Lewis Reunion 2012 (34).JPG'
         file = prefix + ''
+        file = "/photos/Pictures_In_Progress/syncthing/aggregated/Resized_20200317_175759_20200317_203541.jpeg"
 
         logger = logging.getLogger('__main__')
         logger.setLevel(logging.DEBUG)

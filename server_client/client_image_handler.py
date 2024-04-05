@@ -238,6 +238,7 @@ if __name__ == "__main__":
         file = prefix + 'Pictures_In_Progress/Emily_amazon_uploads/2015-10-13_20-07-55_000.jpeg'
         # file = prefix + 'Pictures_In_Progress/2018/Babymoon/Italy/compressed/DSC_6097_stitch2.jpg'
 
+        file = '/photos/Pictures_In_Progress/syncthing/aggregated/Resized_20200317_175759_20200317_203541.jpeg'
 
         logger = logging.getLogger('__main__')
         logger.setLevel(logging.DEBUG)

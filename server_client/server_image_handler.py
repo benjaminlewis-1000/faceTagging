@@ -1,14 +1,16 @@
 #! /usr/bin/env python
 
 import os
-import torch
-from torchvision import transforms
-import face_extraction
-from face_extraction.encode_image_with_bounding import encode_image_with_bounding
 import sys
 
+### DISREGARD THIS
 # Put this file in crontab -e with the line (for initial system startup)
 # @reboot (<PATH_TO_GUNICORN>/gunicorn -b 0.0.0.0:5000 -w 1 --chdir <PATH_TO_THIS_GIT_REPO> server_client.server_image_handler:app ) &
+### DO THIS: 
+# For Jetson:
+# put in /etc/rc.local:
+# runuser -l <user> -c "/usr/bin/python3 <PATH_TO_GUNICORN>/gunicorn -b 0.0.0.0:5000 -w 1 --chdir <PATH_TO_THIS_GIT_REPO> server_client.server_image_handler:app --timeout 600" &
+# Can test with `sudo /etc/rc.local start`
 
 ### Put the following script in your /lib/systemd/system-sleep directory, with modifications to get the right directory. 
 '''
@@ -53,16 +55,9 @@ PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(PARENT_DIR)
 
 
-try:
-    from .server_ip_discover import ip_responder
-except:
-    from server_ip_discover import ip_responder
-
+from .server_ip_discover import ip_responder
 from flask import Flask, request, Response, session
 from flask_session import Session
-
-# Required on Jetson now for OpenCV to work.
-os.environ['OPENBLAS_CORETYPE'] = 'ARMV8'
 
 from PIL import Image, ExifTags
 import base64
@@ -96,8 +91,6 @@ except AttributeError:
     using_cuda = False
 except ImportError:
     using_cuda = False
-
-
 
 def open_and_rotate_image(source_image_file):
 
@@ -175,7 +168,7 @@ def face_reencode():
 
     data = json.loads(r.data)
     file_data = data['base64_file']
-    bounding_box = data['bounding_box']
+    face_locations = data['bounding_box']
     # Convert the string to bytes. We know that the string 
     # is a base64 string encoded using utf-8.
     file_data = file_data.encode('utf-8')
@@ -210,8 +203,29 @@ def face_reencode():
 
     npImage = open_and_rotate_image(file)
 
+    # Then you cut it out...
+    fl = face_locations[0]
+    # Padding is 0.25 -- so...
+    height = fl[2] - fl[0]
+    pad_height = int(0.25 * height)
+    width = fl[3] - fl[1]
+    pad_width = int(0.25 * width)
+
+    face_locations_adj = [(pad_height, pad_width, int(height * 1.5), int(width * 1.5))]
+
+    # face_locations_adj = [0, 0, fl[2] - fl[0], fl[3] - fl[1]]
+    npCrop = npImage[np.max(fl[0] - pad_height, 0):fl[2] + pad_height, np.max(fl[1] - pad_width, 0):fl[3] + pad_width]
+
+    cropTensor = torch.Tensor(npCrop)
+
+    cropTensor = cropTensor.permute(2, 0 , 1)
+    out = transforms.functional.autocontrast(cropTensor)
+    out = out.permute(1, 2, 0)
+    npCrop = out.numpy()
+
     s = time.time()
-    encoding = encode_image_with_bounding(npImage = npImage, bounding_box=bounding_box, pad_pct = 0.25)
+    encoding = face_recognition.face_encodings(npImage, known_face_locations=face_locations, num_jitters=200, model='large')
+    encoding2 = face_recognition.face_encodings(npCrop, known_face_locations=face_locations_adj, num_jitters=200, model='large')
     print(time.time() - s)
 
     enc = (json.dumps(list(encoding[0])))

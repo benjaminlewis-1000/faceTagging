@@ -13,6 +13,6 @@
 	</ports>
 	<timeout>
 		<connect_timeout>3</connect_timeout>
-		<read_timeout>120</read_timeout>
+		<read_timeout>600</read_timeout>
 	</timeout>
 </params>

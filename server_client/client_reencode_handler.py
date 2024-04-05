@@ -2,7 +2,6 @@
 
 import os
 import sys
-import dlib
 
 PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -18,11 +17,9 @@ import json
 import numpy as np
 import cv2
 import hashlib
-import face_extraction
 import matplotlib.pyplot as plt
 import client_ip_discover # import find_external_server
 import logging
-import coloredlogs
 from PIL import Image, ExifTags
 
 
@@ -52,24 +49,16 @@ def image_and_box_for_network(filename, bounding_box):
     return payload, headers
 
 
-def face_extract_client(filename, bounding_box, server_ip_finder, logger=None):
+def face_encoding_client(filename, bounding_box, server_ip_finder, logger=None):
 
-    if logger is None:
-        logger = logging.getLogger('__main__')
-        logger.setLevel(logging.DEBUG)
+#    server_there = server_ip_finder.check_ip()
+#    if server_there:
+#        ext_ip = server_ip_finder.server_ip
+#    else:
+#        server_ip_finder.find_external_server()
+#        ext_ip = None
 
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG)
-        logger.addHandler(ch)
-        coloredlogs.install()
-
-    server_there = server_ip_finder.check_ip()
-    if server_there:
-        ext_ip = server_ip_finder.server_ip
-    else:
-        server_ip_finder.find_external_server()
-        ext_ip = None
-
+    ext_ip = server_ip_finder.server_ip
     with open(os.path.join(PARENT_DIR, 'parameters.xml')) as p:
         config = xmltodict.parse(p.read())
     port_image_handle = int(config['params']['ports']['server_port_image_handle'])
@@ -81,13 +70,14 @@ def face_extract_client(filename, bounding_box, server_ip_finder, logger=None):
 
     process_local = True
     if not ext_ip:
-        logger.error('GPU server not available to extract faces from {}'.format(filename))
+        # logger.error('GPU server not available to extract faces from {}'.format(filename))
         process_local = True
+        print("Processing locally")
     else:
         payload, headers = image_and_box_for_network(filename, bounding_box)
         addr = f'http://{ext_ip}:{port_image_handle}'
         alive_url = addr + '/api/alive'
-        logger.debug("Alive url is {}".format(alive_url))
+        # logger.debug("Alive url is {}".format(alive_url))
         try:
             # Since 'alive' expects no payload, it will throw 
             # an error if it receives one. So this is proper.
@@ -95,65 +85,61 @@ def face_extract_client(filename, bounding_box, server_ip_finder, logger=None):
             # decode response
             retval = json.loads(response.text)
             if not retval['server_supports_cuda']:
-                logger.error("Server does not support CUDA: processing locally.")
+                print("Server does not support CUDA: processing locally.")
             if response.status_code == 200:
                 process_local = not retval['server_supports_cuda'] 
 
         except requests.exceptions.ConnectionError as ce:
             print(ce)
-            logger.error("Connection error for API -- will process locally")
+            print("Connection error for API -- will process locally")
             process_local = True
 
-    if process_local:
-        logger.warning("Processing locally!")
-        if not dlib.DLIB_USE_CUDA:
-            raise IOError("No GPU available")
-        else:
-            matched_faces, _, _, elapsed_time = face_extraction.extract_faces_from_image(filename, config)
-    else:
-        addr = f'http://{ext_ip}:{port_image_handle}'
-        face_extract_url = addr + '/api/face_extract'
-        logger.debug("Using GPU, address is {}".format(face_extract_url))
+    addr = f'http://{ext_ip}:{port_image_handle}'
+    face_extract_url = addr + '/api/face_reencode'
 
-        # send http request with image and receive response
+    # send http request with image and receive response
+    try:
+        response = requests.post(face_extract_url, data=payload, headers=headers, timeout=(connect_timeout, read_timeout))
+        # decode response
         try:
-            response = requests.post(face_extract_url, data=payload, headers=headers, timeout=(connect_timeout, read_timeout))
-            # decode response
-            try:
-                retval = json.loads(response.text)
-            except json.decoder.JSONDecodeError as jde:
-                if '500 Internal Server Error' in response.text:
-                    logger.critical("Your server face extract code is broken! It broke on filename {}".format(filename))
-                    raise IOError(f'Your server face extract code is broken. Fix it! It broke on filename {filename}. \nError text: {response.text}')
-                else:
-                    print(f"File is: {filename}. Text response is : {response.text[:300]}")
-                    print(jde)
-                    # raise(jde)
-                    return
-            # retval = json.loads(response.text)
-            elapsed_time = retval['elapsed_time']
-
-            if not retval['success']:
-                print("No success: ", retval['message'])
+            retval = json.loads(response.text)
+        except json.decoder.JSONDecodeError as jde:
+            if '500 Internal Server Error' in response.text:
+                print("Your server face extract code is broken! It broke on filename {}".format(filename))
+                raise IOError(f'Your server face extract code is broken. Fix it! It broke on filename {filename}. \nError text: {response.text}')
             else:
-                matched_faces = json.loads(retval['xmp_data'], object_hook = decode_object)
+                print(f"File is: {filename}. Text response is : {response.text[:300]}")
+                print(jde)
+                # raise(jde)
+                return
 
-            logger.debug('GPU server **was** used to extract faces from {}'.format(filename))
+        if not retval['success']:
+            print("No success: ", retval['message'])
+        else:
+            encoding = json.loads(retval['encoding'])
 
-        except requests.exceptions.ConnectionError as ce:
-            print(ce)
-            logger.error('GPU server could not connect in face extraction.')
-            raise ce
-        except requests.exceptions.ReadTimeout as ce:
-            logger.error('GPU server timed out when face extracting {}'.format(filename))
-            raise ce
 
-    logger.debug('Elapsed time to extract face encoding from {} was {}'.format(filename, elapsed_time))
+    except:
+        print(ce)
+        print('GPU server could not connect in face extraction.')
+        raise ce
 
-    print(matched_faces)
 
-    # for face_num in range(len(matched_faces)):
-    #     # matched_faces[face_num].reconstruct_square_face(filename)
-    #     matched_faces[face_num].reconstruct_nonrect_face(filename)
+    return encoding
 
-    return matched_faces
+if __name__ == '__main__':
+
+    # With top-to-bottom as Y and left-to-right as X, 
+    # face_location is described as (top Y, left X, bottom Y, right X)
+    face_location = [(173, 1350, 2098, 2899)]
+    # Image chip would then be:
+    # img[fl[0]:fl[2], fl[1]:fl[3]]
+    source_image_file = '/photos/Completed/Pictures_finished/Family Pictures/2017/December/_DSC0927.JPG'
+
+    client_ip = client_ip_discover.server_finder()
+    # print(clie)
+    # # client_ip = '192.168.1.146'
+    # if 'IN_DOCKER' in os.environ.keys() and os.environ['IN_DOCKER']:
+    #     mf = face_extract_client(os.path.join('/test_imgs_filepopulate/', 'has_face_tags.jpg'), client_ip)
+
+    print(face_encoding_client(source_image_file, face_location, client_ip ))
