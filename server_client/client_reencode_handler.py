@@ -130,7 +130,7 @@ def face_encoding_client(filename, bounding_box, server_ip_finder, logger=None):
 if __name__ == '__main__':
 
     # With top-to-bottom as Y and left-to-right as X, 
-    # face_location is described as (top Y, left X, bottom Y, right X)
+    # face_location is described as (top Y, right X, bottom Y, left X)
     face_location = [(173, 1350, 2098, 2899)]
     # Image chip would then be:
     # img[fl[0]:fl[2], fl[1]:fl[3]]

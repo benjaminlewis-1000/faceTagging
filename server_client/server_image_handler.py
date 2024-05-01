@@ -203,29 +203,29 @@ def face_reencode():
 
     npImage = open_and_rotate_image(file)
 
-    # Then you cut it out...
-    fl = face_locations[0]
-    # Padding is 0.25 -- so...
-    height = fl[2] - fl[0]
-    pad_height = int(0.25 * height)
-    width = fl[3] - fl[1]
-    pad_width = int(0.25 * width)
-
-    face_locations_adj = [(pad_height, pad_width, int(height * 1.5), int(width * 1.5))]
-
-    # face_locations_adj = [0, 0, fl[2] - fl[0], fl[3] - fl[1]]
-    npCrop = npImage[np.max(fl[0] - pad_height, 0):fl[2] + pad_height, np.max(fl[1] - pad_width, 0):fl[3] + pad_width]
-
-    cropTensor = torch.Tensor(npCrop)
-
-    cropTensor = cropTensor.permute(2, 0 , 1)
-    out = transforms.functional.autocontrast(cropTensor)
-    out = out.permute(1, 2, 0)
-    npCrop = out.numpy()
-
-    s = time.time()
+#     # Then you cut it out...
+#     fl = face_locations[0]
+#     # Padding is 0.25 -- so...
+#     height = fl[2] - fl[0]
+#     pad_height = int(0.25 * height)
+#     width = fl[3] - fl[1]
+#     pad_width = int(0.25 * width)
+# 
+#     face_locations_adj = [(pad_height, pad_width, int(height * 1.5), int(width * 1.5))]
+# 
+#     # face_locations_adj = [0, 0, fl[2] - fl[0], fl[3] - fl[1]]
+#     npCrop = npImage[np.max(fl[0] - pad_height, 0):fl[2] + pad_height, np.max(fl[1] - pad_width, 0):fl[3] + pad_width]
+# 
+#     cropTensor = torch.Tensor(npCrop)
+# 
+#     cropTensor = cropTensor.permute(2, 0 , 1)
+#     out = transforms.functional.autocontrast(cropTensor)
+#     out = out.permute(1, 2, 0)
+#     npCrop = out.numpy()
+# 
+#     s = time.time()
     encoding = face_recognition.face_encodings(npImage, known_face_locations=face_locations, num_jitters=200, model='large')
-    encoding2 = face_recognition.face_encodings(npCrop, known_face_locations=face_locations_adj, num_jitters=200, model='large')
+#     encoding2 = face_recognition.face_encodings(npCrop, known_face_locations=face_locations_adj, num_jitters=200, model='large')
     print(time.time() - s)
 
     enc = (json.dumps(list(encoding[0])))
